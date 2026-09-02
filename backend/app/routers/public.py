@@ -1,0 +1,118 @@
+import uuid
+from decimal import Decimal, ROUND_HALF_UP
+
+from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import HTMLResponse
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.models import BusinessSettings, Category, Product
+from app.schemas.category import CategoryResponse
+from app.schemas.order import CheckoutResponse, OrderCreate, OrderResponse
+from app.schemas.product import ProductResponse
+from app.schemas.settings import BusinessSettingsResponse
+from app.services.orders import (
+    checkout_links,
+    create_order,
+    get_business_settings,
+    get_order_by_token,
+    order_share_html,
+)
+from app.services.storage import public_url
+
+router = APIRouter()
+
+
+def product_response(product: Product, rate: Decimal | None) -> ProductResponse:
+    price_khr = None
+    if rate:
+        price_khr = int(
+            (Decimal(product.price_usd_cents) * rate / 100).quantize(Decimal("1"), ROUND_HALF_UP)
+        )
+    return ProductResponse.model_validate(product).model_copy(
+        update={"image_url": public_url(product.image_path), "price_khr": price_khr}
+    )
+
+
+def order_response(order) -> OrderResponse:
+    response = OrderResponse.model_validate(order)
+    response.items = [
+        item.model_copy(update={"image_url": public_url(item.image_path)}) for item in response.items
+    ]
+    return response
+
+
+@router.get("/health")
+def health(db: Session = Depends(get_db)) -> dict[str, str]:
+    db.execute(select(1))
+    return {"status": "ok"}
+
+
+@router.get("/settings", response_model=BusinessSettingsResponse)
+def public_settings(db: Session = Depends(get_db)) -> BusinessSettings:
+    settings = get_business_settings(db)
+    db.commit()
+    return settings
+
+
+@router.get("/categories", response_model=list[CategoryResponse])
+def list_categories(db: Session = Depends(get_db)):
+    return db.scalars(
+        select(Category).where(Category.is_active.is_(True)).order_by(Category.name)
+    ).all()
+
+
+@router.get("/products", response_model=list[ProductResponse])
+def list_products(
+    category: str | None = None,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: Session = Depends(get_db),
+):
+    statement = select(Product).where(Product.is_active.is_(True)).order_by(Product.created_at.desc())
+    if category:
+        statement = statement.join(Category).where(Category.slug == category)
+    products = db.scalars(statement.offset(offset).limit(limit)).all()
+    settings = get_business_settings(db)
+    return [product_response(product, settings.usd_to_khr_rate) for product in products]
+
+
+@router.get("/products/{slug}", response_model=ProductResponse)
+def get_product(slug: str, db: Session = Depends(get_db)):
+    product = db.scalar(
+        select(Product).where(Product.slug == slug, Product.is_active.is_(True))
+    )
+    if product is None:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail="product not found")
+    settings = get_business_settings(db)
+    return product_response(product, settings.usd_to_khr_rate)
+
+
+@router.post("/orders", response_model=CheckoutResponse, status_code=201)
+def checkout(payload: OrderCreate, db: Session = Depends(get_db)):
+    order, business = create_order(db, payload)
+    preferred, preferred_url, fallback_url, order_url, message = checkout_links(order, business)
+    return CheckoutResponse(
+        **order_response(order).model_dump(),
+        public_url=order_url,
+        prepared_message=message,
+        preferred_channel=preferred,
+        preferred_url=preferred_url,
+        fallback_url=fallback_url,
+    )
+
+
+@router.get("/orders/{token}", response_model=OrderResponse)
+def public_order(token: uuid.UUID, db: Session = Depends(get_db)):
+    return order_response(get_order_by_token(db, token))
+
+
+@router.get("/orders/{token}/share", response_class=HTMLResponse)
+def share_order(token: uuid.UUID, request: Request, db: Session = Depends(get_db)):
+    order = get_order_by_token(db, token)
+    business = get_business_settings(db)
+    order_url = str(request.url)
+    return HTMLResponse(order_share_html(order, business, order_url))

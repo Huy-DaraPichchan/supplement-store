@@ -1,0 +1,51 @@
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Type checking / linting
+.mypy_cache/
+.ruff_cache/
+.uv-cache/
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Unrelated local binary downloads
+public/assets/*.zip
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# AI miscellaneous
+prompt.md

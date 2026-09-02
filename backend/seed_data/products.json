@@ -1,0 +1,41 @@
+{
+  "business_settings": {
+    "company_name": "Demo Supplement Store",
+    "company_summary": "A demo catalog for testing the storefront and supplier presentation.",
+    "address": "",
+    "phone": "",
+    "email": "",
+    "telegram_enabled": false,
+    "messenger_enabled": false,
+    "usd_to_khr_rate": 4100
+  },
+  "categories": [
+    {"name": "Vitamins & Supplements", "slug": "vitamins-supplements", "is_active": true},
+    {"name": "Food & Nutrition", "slug": "food-nutrition", "is_active": true},
+    {"name": "Personal Care", "slug": "personal-care", "is_active": true}
+  ],
+  "products": [
+    {"name":"Aloe Vera Supplement","slug":"aloe-vera-supplement","sku":"DEMO-001","description":"Demo aloe vera product.","price_usd_cents":1299,"stock":30,"is_active":true,"category_slug":"vitamins-supplements","image":"aloe vera.jpg"},
+    {"name":"Black Bottle Capsules","slug":"black-bottle-capsules","sku":"DEMO-002","description":"Demo daily capsule supplement.","price_usd_cents":1899,"stock":24,"is_active":true,"category_slug":"vitamins-supplements","image":"black bottle.jpg"},
+    {"name":"Daily Wellness Bottle","slug":"daily-wellness-bottle","sku":"DEMO-003","description":"Demo everyday wellness supplement.","price_usd_cents":1499,"stock":35,"is_active":true,"category_slug":"vitamins-supplements","image":"bottle.jpg"},
+    {"name":"Essential Capsules","slug":"essential-capsules","sku":"DEMO-004","description":"Demo essential capsule formula.","price_usd_cents":1699,"stock":28,"is_active":true,"category_slug":"vitamins-supplements","image":"capsule.jpg"},
+    {"name":"Fruit Chewables","slug":"fruit-chewables","sku":"DEMO-005","description":"Demo fruit-flavored chewables.","price_usd_cents":1099,"stock":40,"is_active":true,"category_slug":"vitamins-supplements","image":"chewie.jpg"},
+    {"name":"Daily Skin Cream","slug":"daily-skin-cream","sku":"DEMO-006","description":"Demo moisturizing skin cream.","price_usd_cents":1399,"stock":20,"is_active":true,"category_slug":"personal-care","image":"cream.jpg"},
+    {"name":"Golden Softgels","slug":"golden-softgels","sku":"DEMO-007","description":"Demo golden softgel supplement.","price_usd_cents":2199,"stock":22,"is_active":true,"category_slug":"vitamins-supplements","image":"golden pill.jpg"},
+    {"name":"Grape Fruit Spread","slug":"grape-fruit-spread","sku":"DEMO-008","description":"Demo grape nutrition spread.","price_usd_cents":899,"stock":18,"is_active":true,"category_slug":"food-nutrition","image":"grape jam.jpg"},
+    {"name":"Mineral Tablets","slug":"mineral-tablets","sku":"DEMO-009","description":"Demo mineral tablet supplement.","price_usd_cents":1599,"stock":32,"is_active":true,"category_slug":"vitamins-supplements","image":"gray pills.jpg"},
+    {"name":"Green Wellness Tablets","slug":"green-wellness-tablets","sku":"DEMO-010","description":"Demo green wellness tablets.","price_usd_cents":1799,"stock":26,"is_active":true,"category_slug":"vitamins-supplements","image":"green tablet.jpg"},
+    {"name":"Jujube Fruit Spread","slug":"jujube-fruit-spread","sku":"DEMO-011","description":"Demo jujube nutrition spread.","price_usd_cents":999,"stock":18,"is_active":true,"category_slug":"food-nutrition","image":"jujube jam.jpg"},
+    {"name":"Magenta Wellness Bottle","slug":"magenta-wellness-bottle","sku":"DEMO-012","description":"Demo bottled wellness supplement.","price_usd_cents":1999,"stock":25,"is_active":true,"category_slug":"vitamins-supplements","image":"magenta bottle.jpg"},
+    {"name":"Daily Tablets","slug":"daily-tablets","sku":"DEMO-013","description":"Demo daily tablet formula.","price_usd_cents":1199,"stock":50,"is_active":true,"category_slug":"vitamins-supplements","image":"pills.jpg"},
+    {"name":"Pink Vitamin Tablets","slug":"pink-vitamin-tablets","sku":"DEMO-014","description":"Demo pink vitamin tablets.","price_usd_cents":1399,"stock":36,"is_active":true,"category_slug":"vitamins-supplements","image":"pink pill.jpg"},
+    {"name":"Nutrition Powder","slug":"nutrition-powder","sku":"DEMO-015","description":"Demo powdered nutrition blend.","price_usd_cents":2499,"stock":16,"is_active":true,"category_slug":"food-nutrition","image":"powder.jpg"},
+    {"name":"Red Wellness Tablets","slug":"red-wellness-tablets","sku":"DEMO-016","description":"Demo red wellness tablets.","price_usd_cents":1699,"stock":28,"is_active":true,"category_slug":"vitamins-supplements","image":"red tablet.jpg"},
+    {"name":"Boxed Daily Supplement","slug":"boxed-daily-supplement","sku":"DEMO-017","description":"Demo boxed daily supplement.","price_usd_cents":2299,"stock":14,"is_active":true,"category_slug":"vitamins-supplements","image":"red white box table.jpg"},
+    {"name":"Wellness Shots","slug":"wellness-shots","sku":"DEMO-018","description":"Demo ready-to-drink wellness shots.","price_usd_cents":2799,"stock":12,"is_active":true,"category_slug":"food-nutrition","image":"shots.jpg"},
+    {"name":"Travel Wellness Bottle","slug":"travel-wellness-bottle","sku":"DEMO-019","description":"Demo compact wellness supplement.","price_usd_cents":999,"stock":42,"is_active":true,"category_slug":"vitamins-supplements","image":"small bottle.jpg"},
+    {"name":"Daily Care Spray","slug":"daily-care-spray","sku":"DEMO-020","description":"Demo personal-care spray.","price_usd_cents":1299,"stock":20,"is_active":true,"category_slug":"personal-care","image":"spray.jpg"},
+    {"name":"Complete Daily Tablets","slug":"complete-daily-tablets","sku":"DEMO-021","description":"Demo complete daily tablet formula.","price_usd_cents":2099,"stock":24,"is_active":true,"category_slug":"vitamins-supplements","image":"tablet.jpg"},
+    {"name":"Yellow Vitamin Tablets","slug":"yellow-vitamin-tablets","sku":"DEMO-022","description":"Demo yellow vitamin tablets.","price_usd_cents":1499,"stock":34,"is_active":true,"category_slug":"vitamins-supplements","image":"yellow pill.jpg"}
+  ]
+}
