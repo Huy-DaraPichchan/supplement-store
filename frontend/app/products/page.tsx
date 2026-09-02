@@ -1,69 +1,30 @@
 "use client";
 
-import { ProductCard } from "@/components/ProductCard";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { Search, Filter } from "lucide-react";
-import { products } from "@/lib/data";
+import ProductGrid from "@/components/ProductGrid";
+import { motion } from "framer-motion";
 
 export default function ProductsPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [category, setCategory] = useState("All");
-
-  const filtered = products.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = category === "All" || p.category === category;
-    return matchesSearch && matchesCategory;
-  });
-
   return (
-    <div className="min-h-screen py-16">
-      <div className="mx-auto max-w-7xl px-4">
-        <h1 className="text-4xl font-bold mb-8">All Products</h1>
-
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-lg border pl-10 pr-4 py-2 bg-background"
-            />
-          </div>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="rounded-lg border px-4 py-2 bg-background"
-          >
-            <option>All</option>
-            <option>Electronics</option>
-            <option>Fashion</option>
-            {/* Add categories dynamically */}
-          </select>
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <motion.section
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+      >
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-emerald-600">
+            PureVita collection
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
+            Supplements for every day
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+            Explore carefully selected vitamins, minerals, and wellness essentials.
+            Keep scrolling to discover more.
+          </p>
         </div>
-
-        <motion.div
-          layout
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-        >
-          <AnimatePresence>
-            {filtered.map((product) => (
-              <motion.div
-                key={product.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-      </div>
-    </div>
+      </motion.section>
+      <ProductGrid />
+    </main>
   );
 }

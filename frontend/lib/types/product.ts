@@ -5,7 +5,11 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
-  badges: ProductBadge[];
+  imageUrl: string | null;
+  badges: Array<ProductBadge | "In stock" | "Sold out">;
+  slug: string;
+  sku: string;
+  stock: number;
+  priceKhr: number | null;
 }
  

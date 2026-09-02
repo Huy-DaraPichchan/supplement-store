@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, Variants } from "framer-motion"; // or "motion/react"
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 export const ImagesSlider = ({
   images,
@@ -24,13 +24,13 @@ export const ImagesSlider = ({
   const [loadedImages, setLoadedImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1 === images.length ? 0 : prev + 1));
-  };
+  }, [images.length]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 < 0 ? images.length - 1 : prev - 1));
-  };
+  }, [images.length]);
 
   // Load images with error tolerance
   useEffect(() => {
@@ -40,7 +40,7 @@ export const ImagesSlider = ({
 
       const results = await Promise.allSettled(
         images.map((src) => {
-          return new Promise<string>((resolve, reject) => {
+          return new Promise<string>((resolve) => {
             const img = new Image();
             img.src = src;
             img.onload = () => resolve(src);
@@ -77,7 +77,7 @@ export const ImagesSlider = ({
       window.removeEventListener("keydown", handleKeyDown);
       if (interval) clearInterval(interval);
     };
-  }, [autoplay]); // note: dependencies should include handlers if they change, but they are stable
+  }, [autoplay, handleNext, handlePrevious]);
 
   const slideVariants: Variants = {
     initial: { scale: 0, opacity: 0, rotateX: 45 },

@@ -1,96 +1,46 @@
+import { Globe, Heart, Mail, MessageCircle } from "lucide-react";
 import Link from "next/link";
-import { FaceAngry, FaceGrinning, Mail } from "lucide-react";
 
 const footerLinks = {
-  Products: [
-    { name: "All Products", href: "/products" },
-    { name: "Categories", href: "/categories" },
-    { name: "New Arrivals", href: "/new" },
-  ],
-  Company: [
-    { name: "About Us", href: "/about" },
-    { name: "Business", href: "/business" },
-    { name: "Careers", href: "/careers" },
-  ],
-  Legal: [
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms of Service", href: "/terms" },
-    { name: "Disclaimer", href: "/disclaimer" },
-  ],
+  Shop: ["All Supplements", "Vitamins", "Minerals", "Herbs"],
+  Help: ["Contact Us", "Shipping & Returns", "FAQs", "Order Status"],
+  Company: ["About PureVita", "Our Standards", "Business", "Careers"],
 };
 
 export default function Footer() {
   return (
-    <footer className="border-t bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-12">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {/* Brand & Description */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-primary">BrandName</h2>
-            <p className="text-sm text-muted-foreground">
-              Short description of your business. We provide high-quality
-              products and services.
+    <footer className="border-t border-slate-200 bg-slate-950 text-slate-300 dark:border-slate-800">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-10 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+          <div className="col-span-2 lg:col-span-1">
+            <Link href="/" className="text-2xl font-black tracking-tight text-white">
+              Pure<span className="text-emerald-400">Vita</span>
+            </Link>
+            <p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">
+              Simple, honest wellness essentials for the rituals that keep you feeling your best.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" aria-label="LinkedIn" className="hover:text-primary">
-                <FaceGrinning size={20} />
-              </a>
-              <a href="#" aria-label="Twitter" className="hover:text-primary">
-                <FaceGrinning size={20} />
-              </a>
-              <a href="#" aria-label="GitHub" className="hover:text-primary">
-                <FaceAngry
-                 size={20} />
-              </a>
-              <a href="#" aria-label="Email" className="hover:text-primary">
-                <Mail size={20} />
-              </a>
+            <div className="mt-6 flex gap-3">
+              {[Globe, Heart, MessageCircle, Mail].map((Icon, index) => (
+                <a key={index} href="#" aria-label="Social link" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 transition-colors hover:border-emerald-400 hover:text-emerald-400">
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
             </div>
           </div>
-
-          {/* Link Columns */}
           {Object.entries(footerLinks).map(([title, links]) => (
             <div key={title}>
-              <h3 className="font-semibold mb-4">{title}</h3>
-              <ul className="space-y-2">
-                {links.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
+              <h3 className="text-sm font-bold text-white">{title}</h3>
+              <ul className="mt-5 space-y-3 text-sm text-slate-400">
+                {links.map((label) => (
+                  <li key={label}><Link href={title === "Shop" ? "/products" : "/about"} className="transition-colors hover:text-emerald-400">{label}</Link></li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-
-        {/* Disclaimers */}
-        <div className="mt-12 border-t pt-8">
-          <div className="flex flex-col md:flex-row justify-between gap-4">
-            <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} BrandName. All rights reserved.
-            </p>
-            <div className="flex gap-4 text-xs text-muted-foreground">
-              <Link href="/privacy" className="hover:text-primary">
-                Privacy
-              </Link>
-              <Link href="/terms" className="hover:text-primary">
-                Terms
-              </Link>
-              <Link href="/cookies" className="hover:text-primary">
-                Cookies
-              </Link>
-            </div>
-          </div>
-          <p className="mt-4 text-xs text-muted-foreground">
-            Disclaimer: The information provided on this website is for general
-            informational purposes only. All products and services are subject
-            to availability.
-          </p>
+        <div className="mt-14 flex flex-col gap-3 border-t border-slate-800 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} PureVita. All rights reserved.</p>
+          <p>Made for better everyday habits.</p>
         </div>
       </div>
     </footer>
