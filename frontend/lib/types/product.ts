@@ -1,5 +1,5 @@
 export type ProductBadge = "Vegan" | "Lab Tested" | "Best Seller" | "New";
- 
+
 export interface Product {
   id: string;
   name: string;
@@ -12,4 +12,3 @@ export interface Product {
   stock: number;
   priceKhr: number | null;
 }
- 

@@ -28,8 +28,9 @@ filters, and product discovery. Do not copy Facebook's branding or visual design
 
 The primary brand color is `#bc1a8d`.
 
-Do not use blue or green anywhere in the interface, including status indicators,
-charts, links, focus states, illustrations, gradients, and dark mode.
+Do not use blue or green in interface chrome, including status indicators, charts,
+links, focus states, illustrations, gradients, and dark mode. Product photography
+may retain its natural colors so products are represented accurately.
 
 Use semantic theme tokens instead of raw Tailwind color classes in components.
 
@@ -37,21 +38,21 @@ Use semantic theme tokens instead of raw Tailwind color classes in components.
 
 | Role | Value | Use |
 | --- | --- | --- |
-| Background | `#fcfafc` | Page background |
+| Background | `#f7f2f6` | Page background |
 | Foreground | `#241d23` | Primary text |
 | Surface | `#ffffff` | Cards, menus, dialogs |
-| Surface muted | `#f6f2f5` | Secondary sections and controls |
+| Surface muted | `#f0e8ee` | Secondary sections and controls |
 | Primary | `#bc1a8d` | Main actions and active states |
 | Primary hover | `#991570` | Hover and pressed actions |
 | Primary soft | `#f9e6f4` | Selected and highlighted surfaces |
 | Primary foreground | `#ffffff` | Text on primary surfaces |
 | Secondary text | `#665d65` | Supporting text |
 | Muted text | `#938a92` | Metadata and placeholders |
-| Border | `#e8dfe6` | Default borders |
-| Border strong | `#d7cbd5` | Emphasized boundaries |
+| Border | `#ddcfda` | Default borders |
+| Border strong | `#cbb8c7` | Emphasized boundaries |
 | Warm accent | `#e58b45` | Promotional or attention accents |
 | Warm accent soft | `#fff0e4` | Promotional backgrounds |
-| Success | `#7a6b32` | Successful and available states |
+| Success | `#8a641f` | Successful and available states |
 | Warning | `#b66a1c` | Warnings and low-stock states |
 | Destructive | `#c13b56` | Errors and destructive actions |
 
@@ -59,21 +60,21 @@ Use semantic theme tokens instead of raw Tailwind color classes in components.
 
 | Role | Value |
 | --- | --- |
-| Background | `#171216` |
+| Background | `#120e11` |
 | Foreground | `#f8f2f6` |
 | Surface | `#211a20` |
 | Surface elevated | `#2a2128` |
-| Surface muted | `#332830` |
+| Surface muted | `#362a32` |
 | Primary | `#db4caf` |
 | Primary hover | `#e66cbe` |
 | Primary soft | `#442039` |
 | Primary foreground | `#1b1018` |
 | Secondary text | `#c9bdc6` |
 | Muted text | `#9f929c` |
-| Border | `#3d313a` |
-| Border strong | `#574650` |
+| Border | `#493843` |
+| Border strong | `#624d5a` |
 | Warm accent | `#eea260` |
-| Success | `#b2a35f` |
+| Success | `#d2a84a` |
 | Warning | `#e09a52` |
 | Destructive | `#e2667c` |
 
@@ -142,8 +143,12 @@ Mobile layouts should prioritize search, categories, and a two-column product gr
 - Use restrained corner radii.
 - Default controls and cards should use the shared theme radius.
 - Product images may use a slightly larger radius than controls.
-- Prefer borders and surface contrast over shadows.
-- Use shadows only when elevation communicates behavior, such as menus or dialogs.
+- Prefer borders and surface contrast as the base separation between elements.
+- Product cards may use a soft resting shadow and a slightly stronger hover shadow to
+  improve catalog hierarchy without appearing to float excessively.
+- Use stronger elevation only where it communicates priority or behavior, such as
+  purchasing panels, menus, dialogs, and the primary promotional surface.
+- Define reusable elevation values as semantic shadow tokens in `frontend/app/globals.css`.
 - Avoid floating glass panels, glow effects, and decorative blur.
 
 ## Components

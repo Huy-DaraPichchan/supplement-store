@@ -1,30 +1,31 @@
-"use client";
-
 import ProductGrid from "@/components/ProductGrid";
-import { motion } from "framer-motion";
+import ProductCardSkeleton from "@/components/ProductCardSkeleton";
+import { Suspense } from "react";
 
 export default function ProductsPage() {
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <motion.section
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
-      >
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-emerald-600">
-            PureVita collection
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
-            Supplements for every day
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
-            Explore carefully selected vitamins, minerals, and wellness essentials.
-            Keep scrolling to discover more.
+    <main className="min-h-screen">
+      <section className="border-b border-border bg-card">
+        <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-11 lg:px-8">
+          <p className="text-sm font-semibold text-primary">PureVita catalog</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Find your everyday essentials</h1>
+          <p className="mt-2 max-w-2xl text-base leading-7 text-muted-foreground">
+            Search the full catalog, narrow it by category, and order through your preferred chat channel.
           </p>
         </div>
-      </motion.section>
-      <ProductGrid />
+      </section>
+      <Suspense
+        fallback={
+          <section className="mx-auto max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8" aria-label="Loading products" aria-busy="true">
+            <div className="mb-5 skeleton h-14 rounded-xl" />
+            <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, index) => <ProductCardSkeleton key={index} />)}
+            </div>
+          </section>
+        }
+      >
+        <ProductGrid />
+      </Suspense>
     </main>
   );
 }

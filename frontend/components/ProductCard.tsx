@@ -1,86 +1,54 @@
 "use client";
 
 import type { Product } from "@/lib/types/product";
-import { motion } from "framer-motion";
-import { Heart, Leaf, Plus, Star } from "lucide-react";
-import { useCart } from "./ui/context";
+import { Package, Plus } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useCart } from "./CartProvider";
 
 export function ProductCard({ product }: { product: Product }) {
   const { addToCart } = useCart();
   const isAvailable = product.stock > 0;
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -5 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-950"
-    >
-      <div className="relative aspect-square overflow-hidden bg-slate-50 dark:bg-slate-900">
+    <article className="group flex min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-card transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-raised">
+      <Link href={`/products/${product.slug}`} className="relative block aspect-square overflow-hidden border-b border-border bg-muted">
         {product.imageUrl ? (
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="h-full w-full object-contain p-5 transition-transform duration-500 group-hover:scale-105"
-          />
+          <Image src={product.imageUrl} alt={product.name} fill sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw" className="object-contain p-3 sm:p-5" />
         ) : (
-          <div className="flex h-full items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 text-emerald-600 dark:from-emerald-950 dark:to-teal-950">
-            <Leaf className="h-16 w-16" />
-          </div>
+          <span className="flex size-full items-center justify-center text-muted-foreground">
+            <Package className="size-10" />
+          </span>
         )}
-        <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-          {product.badges.slice(0, 2).map((badge) => (
-            <span
-              key={badge}
-              className={`rounded-sm px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${
-                badge === "Sold out"
-                  ? "bg-slate-700 text-white"
-                  : "bg-emerald-600 text-white"
-              }`}
-            >
-              {badge}
-            </span>
-          ))}
-        </div>
-        <button
-          type="button"
-          aria-label={`Save ${product.name}`}
-          className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-slate-500 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:text-rose-500 dark:bg-slate-900/90"
-        >
-          <Heart className="h-4 w-4" />
-        </button>
-      </div>
+        <span className={`absolute left-2 top-2 rounded-md border px-2 py-1 text-xs font-semibold shadow-card ${isAvailable ? "border-border bg-card text-success" : "border-foreground bg-foreground text-background"}`}>
+          {isAvailable ? "In stock" : "Sold out"}
+        </span>
+      </Link>
 
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-2 flex items-center gap-1 text-amber-500">
-          <Star className="h-3.5 w-3.5 fill-current" />
-          <span className="text-xs font-medium text-slate-500">New favorite</span>
-        </div>
-        <h3 className="line-clamp-2 min-h-12 text-sm font-semibold leading-6 text-slate-900 dark:text-white">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <Link href={`/products/${product.slug}`} className="line-clamp-2 min-h-12 text-base font-medium leading-6 transition-colors hover:text-primary">
           {product.name}
-        </h3>
-        <p className="mt-1 line-clamp-2 min-h-10 text-xs leading-5 text-slate-500">
-          {product.description || "Quality supplements for your everyday routine."}
-        </p>
-        <div className="mt-auto flex items-end justify-between gap-3 pt-4">
-          <div>
-            <span className="text-lg font-bold text-slate-950 dark:text-white">
-              ${product.price.toFixed(2)}
-            </span>
-            <p className="text-[11px] text-slate-400">{product.sku}</p>
+        </Link>
+        <p className="mt-1 truncate text-xs text-muted-foreground">{product.sku}</p>
+        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+          <div className="min-w-0">
+            <p className="text-base font-semibold tabular-nums sm:text-lg">${product.price.toFixed(2)}</p>
+            {product.priceKhr !== null && (
+              <p className="truncate text-xs text-muted-foreground">៛{product.priceKhr.toLocaleString()}</p>
+            )}
           </div>
           <button
             type="button"
             disabled={!isAvailable}
             onClick={() => addToCart(product)}
-            className="flex items-center gap-1.5 rounded-full bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="flex size-11 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-card transition-[background-color,box-shadow] duration-150 hover:bg-primary-hover hover:shadow-raised disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none sm:w-auto sm:px-3"
+            aria-label={isAvailable ? `Add ${product.name} to cart` : `${product.name} is sold out`}
           >
-            <Plus className="h-4 w-4" />
-            {isAvailable ? "Add" : "Sold out"}
+            <Plus className="size-4" />
+            <span className="ml-1.5 hidden text-sm font-semibold sm:inline">Add</span>
           </button>
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }

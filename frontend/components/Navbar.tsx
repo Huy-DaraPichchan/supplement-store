@@ -1,70 +1,195 @@
 "use client";
 
-import { Menu, Search, ShoppingBag, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { Dialog } from "@base-ui/react/dialog";
+import { getCategories, type Category } from "@/lib/api";
+import { ChevronRight, Menu, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { useCart } from "./ui/context";
-import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import CartDrawer from "./CartDrawer";
+import SearchForm from "./SearchForm";
+import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
-  { name: "Shop", href: "/products" },
-  { name: "About Us", href: "/about" },
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
   { name: "Business", href: "/business" },
 ];
 
-export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const { cartCount } = useCart();
+function NavLinks({ mobile = false }: { mobile?: boolean }) {
+  const pathname = usePathname();
+  return navItems.map((item) => {
+    const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        aria-current={active ? "page" : undefined}
+        className={`${mobile ? "flex h-11 items-center rounded-md px-3" : "py-2"} text-base font-medium transition-colors duration-150 ${
+          active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        {item.name}
+      </Link>
+    );
+  });
+}
+
+function MobileCategoryLinks({ categories }: { categories: Category[] }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeCategory = pathname === "/products" ? searchParams.get("category") : null;
+  const shopAllActive = pathname === "/products" && !activeCategory;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
-      <div className="bg-emerald-700 px-4 py-2 text-center text-[11px] font-semibold tracking-wide text-white sm:text-xs">
-        Free shipping on orders over $50 · Your daily wellness, delivered
-      </div>
-      <div className="mx-auto flex h-20 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="shrink-0 text-xl font-black tracking-tight text-emerald-700 dark:text-emerald-400">
-          Pure<span className="text-slate-900 dark:text-white">Vita</span>
-        </Link>
+    <>
+      <Dialog.Close
+        nativeButton={false}
+        render={<Link href="/products" />}
+        aria-current={shopAllActive ? "page" : undefined}
+        className={`flex min-h-11 items-center justify-between rounded-md px-3 text-base font-medium transition-colors ${
+          shopAllActive
+            ? "bg-primary text-primary-foreground"
+            : "text-muted-foreground hover:bg-primary-soft hover:text-primary"
+        }`}
+      >
+        Shop all<ChevronRight className="size-4" />
+      </Dialog.Close>
+      {categories.map((category) => {
+        const active = activeCategory === category.slug;
+        return (
+          <Dialog.Close
+            key={category.id}
+            nativeButton={false}
+            render={<Link href={`/products?category=${encodeURIComponent(category.slug)}`} />}
+            aria-current={active ? "page" : undefined}
+            className={`flex min-h-11 items-center justify-between rounded-md px-3 text-base font-medium transition-colors ${
+              active
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-primary-soft hover:text-primary"
+            }`}
+          >
+            {category.name}<ChevronRight className="size-4" />
+          </Dialog.Close>
+        );
+      })}
+    </>
+  );
+}
 
-        <div className="hidden flex-1 md:block md:max-w-md md:px-6">
-          <Link href="/products" className="flex h-10 items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 text-sm text-slate-400 transition-colors hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900">
-            <Search className="h-4 w-4" />
-            Search vitamins, minerals, and more
+function DesktopCategoryLinks({ categories }: { categories: Category[] }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeCategory = pathname === "/products" ? searchParams.get("category") : null;
+  const shopAllActive = pathname === "/products" && !activeCategory;
+
+  return (
+    <>
+      <Link
+        href="/products"
+        aria-current={shopAllActive ? "page" : undefined}
+        className={`flex h-8 shrink-0 items-center rounded-md px-3 text-sm font-semibold transition-colors ${
+          shopAllActive
+            ? "bg-primary text-primary-foreground"
+            : "text-muted-foreground hover:bg-primary-soft hover:text-primary"
+        }`}
+      >
+        Shop all
+      </Link>
+      {categories.map((category) => {
+        const active = activeCategory === category.slug;
+        return (
+          <Link
+            key={category.id}
+            href={`/products?category=${encodeURIComponent(category.slug)}`}
+            aria-current={active ? "page" : undefined}
+            className={`flex h-8 shrink-0 items-center rounded-md px-3 text-sm font-medium transition-colors ${
+              active
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-primary-soft hover:text-primary"
+            }`}
+          >
+            {category.name}
           </Link>
-        </div>
+        );
+      })}
+    </>
+  );
+}
 
-        <nav className="hidden items-center gap-7 text-sm font-semibold text-slate-600 md:flex dark:text-slate-300">
-          {navItems.map((item) => (
-            <Link key={item.name} href={item.href} className="transition-colors hover:text-emerald-600">
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="ml-auto flex items-center gap-2">
-          <AnimatedThemeToggler className="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" />
-          <button type="button" aria-label={`Shopping bag with ${cartCount} items`} className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-200 dark:hover:bg-slate-800">
-            <ShoppingBag className="h-5 w-5" />
-            {cartCount > 0 && <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[9px] font-bold text-white">{cartCount}</span>}
-          </button>
-          <button type="button" className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 md:hidden dark:text-slate-200" onClick={() => setIsOpen((open) => !open)} aria-label="Toggle menu">
-            {isOpen ? <X /> : <Menu />}
-          </button>
-        </div>
-      </div>
-
-      {isOpen && (
-        <motion.nav initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="border-t border-slate-200 px-4 py-4 md:hidden dark:border-slate-800">
-          <Link href="/products" className="mb-4 flex h-10 items-center gap-3 rounded-full border border-slate-200 px-4 text-sm text-slate-500 dark:border-slate-700" onClick={() => setIsOpen(false)}>
-            <Search className="h-4 w-4" /> Search products
-          </Link>
-          <div className="flex flex-col gap-4 text-sm font-semibold text-slate-700 dark:text-slate-200">
-            {navItems.map((item) => (
-              <Link key={item.name} href={item.href} onClick={() => setIsOpen(false)}>{item.name}</Link>
-            ))}
+function MobileNavigation({ categories }: { categories: Category[] }) {
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring md:hidden">
+        <Menu className="size-5" />
+        <span className="sr-only">Open navigation</span>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 z-50 min-h-dvh bg-foreground/30 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Popup className="fixed inset-y-0 left-0 z-50 flex w-[min(22rem,90vw)] flex-col overflow-y-auto border-r border-border bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-panel transition-transform duration-200 ease-out data-ending-style:-translate-x-full data-starting-style:-translate-x-full sm:p-5">
+          <div className="flex items-center justify-between">
+            <Dialog.Title className="text-lg font-bold tracking-tight">
+              Pure<span className="text-primary">Vita</span>
+            </Dialog.Title>
+            <Dialog.Close className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+              <X className="size-5" />
+              <span className="sr-only">Close navigation</span>
+            </Dialog.Close>
           </div>
-        </motion.nav>
+          <Dialog.Description className="sr-only">Primary site navigation</Dialog.Description>
+          <nav className="mt-6 flex flex-col gap-1">
+            <NavLinks mobile />
+          </nav>
+          {categories.length > 0 && (
+            <div className="mt-6 border-t border-border pt-5">
+              <p className="mb-2 px-3 text-sm font-semibold text-muted-foreground">Shop categories</p>
+              <nav aria-label="Product categories" className="flex flex-col gap-1">
+                <Suspense fallback={null}>
+                  <MobileCategoryLinks categories={categories} />
+                </Suspense>
+              </nav>
+            </div>
+          )}
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+export default function Navbar() {
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    getCategories().then(setCategories).catch(() => setCategories([]));
+  }, []);
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-border bg-background/95 shadow-card backdrop-blur-sm">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">
+        <MobileNavigation categories={categories} />
+        <Link href="/" className="shrink-0 text-xl font-bold tracking-tight">
+          Pure<span className="text-primary">Vita</span>
+        </Link>
+        <SearchForm className="hidden min-w-0 flex-1 md:block md:max-w-xl" />
+        <nav className="ml-auto hidden items-center gap-6 md:flex">
+          <NavLinks />
+        </nav>
+        <div className="ml-auto flex items-center md:ml-2 md:gap-1">
+          <ThemeToggle />
+          <CartDrawer />
+        </div>
+      </div>
+      <div className="px-3 pb-3 md:hidden">
+        <SearchForm />
+      </div>
+      {categories.length > 0 && (
+        <div className="hidden border-t border-border bg-card md:block">
+          <nav aria-label="Product categories" className="mx-auto flex h-10 max-w-7xl items-center gap-1 overflow-x-auto px-6 lg:px-8">
+            <Suspense fallback={null}>
+              <DesktopCategoryLinks categories={categories} />
+            </Suspense>
+          </nav>
+        </div>
       )}
     </header>
   );
