@@ -22,7 +22,7 @@ export default function Home() {
                 <p className="flex items-center gap-2 text-sm font-semibold text-primary">
                   <Sparkles className="size-4" /> Everyday wellness, thoughtfully selected
                 </p>
-                <h1 className="mt-4 max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-[2.75rem]">
+                <h1 className="font-heading mt-4 max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-[2.75rem]">
                   Find supplements that fit your routine—not the noise.
                 </h1>
                 <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
@@ -60,7 +60,7 @@ export default function Home() {
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-primary">Shopping should feel straightforward</p>
-              <h2 className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">Choose your essentials now. Confirm the details in chat.</h2>
+              <h2 className="font-heading mt-1 text-xl font-semibold tracking-tight sm:text-2xl">Choose your essentials now. Confirm the details in chat.</h2>
             </div>
             <Link href="/products" className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-5 text-base font-semibold text-primary-foreground shadow-card transition-[background-color,box-shadow] hover:bg-primary-hover hover:shadow-raised sm:w-auto">
               Start shopping <ArrowRight className="size-4" />

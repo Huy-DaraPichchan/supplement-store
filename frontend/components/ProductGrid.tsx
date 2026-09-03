@@ -57,8 +57,8 @@ function FilterControls({
       <fieldset>
         <legend className="mb-2 text-base font-semibold">Availability</legend>
         <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-3 text-base text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-          <input type="checkbox" checked={inStock} onChange={(event) => onStockChange(event.target.checked)} className="size-4 accent-primary" />
-          In-stock products only
+          <input type="checkbox" checked={inStock} onChange={(event) => onStockChange(event.target.checked)} className="size-4 shrink-0 accent-primary" />
+          In stock only
         </label>
       </fieldset>
     </div>

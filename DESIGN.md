@@ -95,7 +95,12 @@ or green tones.
 
 ## Typography
 
-- Use a clean sans-serif typeface for the complete interface.
+- Use the native system sans-serif stack for functional interface text. This resolves to
+  San Francisco on Apple devices and the familiar platform UI font elsewhere.
+- Use the native serif display stack only for the PureVita wordmark, page titles, and
+  major marketing or section headings.
+- Keep navigation, forms, filters, product cards, prices, and transactional UI in sans-serif.
+- Do not add downloaded web fonts unless the native typography direction changes.
 - Favor readable, medium-weight headings over oversized display typography.
 - Page titles should usually be between `text-2xl` and `text-4xl`.
 - Product names should remain compact and easy to scan.

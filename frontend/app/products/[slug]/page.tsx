@@ -43,7 +43,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center px-4 text-center">
         <Package className="size-10 text-muted-foreground" />
-        <h1 className="mt-4 text-xl font-semibold">{notFound ? "Product not found" : "Product unavailable"}</h1>
+          <h1 className="font-heading mt-4 text-xl font-semibold">{notFound ? "Product not found" : "Product unavailable"}</h1>
         <p className="mt-2 text-base text-muted-foreground">{notFound ? "This product may have been removed from the catalog." : "We could not load this product. Please try again."}</p>
         <Link href="/products" className="mt-5 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-4 text-base font-semibold text-primary-foreground hover:bg-primary-hover">
           <ArrowLeft className="size-4" /> Back to products
@@ -76,7 +76,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
             </span>
             <span className="text-muted-foreground">SKU {product.sku}</span>
           </div>
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight sm:text-4xl">{product.name}</h1>
+          <h1 className="font-heading mt-4 text-2xl font-semibold tracking-tight sm:text-4xl">{product.name}</h1>
           <div className="mt-5 rounded-lg bg-muted px-4 py-3">
             <p className="text-2xl font-semibold tabular-nums">${product.price.toFixed(2)}</p>
             {product.priceKhr !== null && <p className="mt-1 text-base text-muted-foreground">៛{product.priceKhr.toLocaleString()}</p>}

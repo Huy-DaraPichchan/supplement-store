@@ -34,7 +34,7 @@ export default function ProductGridPreview() {
       <div className="mb-6 flex items-start justify-between gap-3 sm:items-end sm:gap-4">
         <div>
           <p className="text-sm font-semibold text-primary">Fresh in the catalog</p>
-          <h2 className="mt-1 text-2xl font-semibold tracking-tight">New arrivals</h2>
+          <h2 className="font-heading mt-1 text-2xl font-semibold tracking-tight">New arrivals</h2>
           <p className="mt-1 hidden text-base text-muted-foreground sm:block">Recently added products for everyday routines.</p>
         </div>
         <Link href="/products" className="flex min-h-11 shrink-0 items-center gap-1.5 text-base font-medium text-primary transition-colors hover:text-primary-hover">

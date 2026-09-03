@@ -128,7 +128,7 @@ function MobileNavigation({ categories }: { categories: Category[] }) {
         <Dialog.Backdrop className="fixed inset-0 z-50 min-h-dvh bg-foreground/30 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Popup className="fixed inset-y-0 left-0 z-50 flex w-[min(22rem,90vw)] flex-col overflow-y-auto border-r border-border bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-panel transition-transform duration-200 ease-out data-ending-style:-translate-x-full data-starting-style:-translate-x-full sm:p-5">
           <div className="flex items-center justify-between">
-            <Dialog.Title className="text-lg font-bold tracking-tight">
+            <Dialog.Title className="font-heading text-lg font-bold tracking-tight">
               Pure<span className="text-primary">Vita</span>
             </Dialog.Title>
             <Dialog.Close className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
@@ -167,7 +167,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 shadow-card backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">
         <MobileNavigation categories={categories} />
-        <Link href="/" className="shrink-0 text-xl font-bold tracking-tight">
+        <Link href="/" className="font-heading shrink-0 text-xl font-bold tracking-tight">
           Pure<span className="text-primary">Vita</span>
         </Link>
         <SearchForm className="hidden min-w-0 flex-1 md:block md:max-w-xl" />

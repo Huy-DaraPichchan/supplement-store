@@ -43,9 +43,9 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-geist-sans);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --font-heading: ui-serif, "New York", Georgia, Cambria, "Times New Roman", serif;
   --radius-sm: calc(var(--radius) * 0.7);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) * 1.3);

@@ -24,7 +24,7 @@ export default function HomeCategories() {
       <div className="mb-5 flex items-start justify-between gap-3 sm:items-end sm:gap-4">
         <div>
           <p className="text-sm font-semibold text-primary">Shop your way</p>
-          <h2 className="mt-1 text-2xl font-semibold tracking-tight">Browse categories</h2>
+          <h2 className="font-heading mt-1 text-2xl font-semibold tracking-tight">Browse categories</h2>
         </div>
         <Link href="/products" className="flex min-h-11 shrink-0 items-center gap-1.5 text-base font-semibold text-primary transition-colors hover:text-primary-hover">
           View all <ArrowRight className="size-4" />

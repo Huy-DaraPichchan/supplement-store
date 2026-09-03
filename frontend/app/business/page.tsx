@@ -13,7 +13,7 @@ export default function BusinessPage() {
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
           <p className="text-sm font-medium text-primary">Business</p>
-          <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="font-heading mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
             Start a practical conversation with PureVita.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">

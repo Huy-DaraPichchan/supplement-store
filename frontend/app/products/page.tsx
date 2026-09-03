@@ -8,7 +8,7 @@ export default function ProductsPage() {
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-11 lg:px-8">
           <p className="text-sm font-semibold text-primary">PureVita catalog</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Find your everyday essentials</h1>
+          <h1 className="font-heading mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Find your everyday essentials</h1>
           <p className="mt-2 max-w-2xl text-base leading-7 text-muted-foreground">
             Search the full catalog, narrow it by category, and order through your preferred chat channel.
           </p>
