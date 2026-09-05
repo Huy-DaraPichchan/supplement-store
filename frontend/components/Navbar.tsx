@@ -11,6 +11,7 @@ import SearchForm from "./SearchForm";
 import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
+  { name: "Store", href: "/products" },
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
   { name: "Business", href: "/business" },
@@ -71,46 +72,6 @@ function MobileCategoryLinks({ categories }: { categories: Category[] }) {
           >
             {category.name}<ChevronRight className="size-4" />
           </Dialog.Close>
-        );
-      })}
-    </>
-  );
-}
-
-function DesktopCategoryLinks({ categories }: { categories: Category[] }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const activeCategory = pathname === "/products" ? searchParams.get("category") : null;
-  const shopAllActive = pathname === "/products" && !activeCategory;
-
-  return (
-    <>
-      <Link
-        href="/products"
-        aria-current={shopAllActive ? "page" : undefined}
-        className={`flex h-8 shrink-0 items-center rounded-md px-3 text-sm font-semibold transition-colors ${
-          shopAllActive
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:bg-primary-soft hover:text-primary"
-        }`}
-      >
-        Shop all
-      </Link>
-      {categories.map((category) => {
-        const active = activeCategory === category.slug;
-        return (
-          <Link
-            key={category.id}
-            href={`/products?category=${encodeURIComponent(category.slug)}`}
-            aria-current={active ? "page" : undefined}
-            className={`flex h-8 shrink-0 items-center rounded-md px-3 text-sm font-medium transition-colors ${
-              active
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-primary-soft hover:text-primary"
-            }`}
-          >
-            {category.name}
-          </Link>
         );
       })}
     </>
@@ -182,15 +143,6 @@ export default function Navbar() {
       <div className="px-3 pb-3 md:hidden">
         <SearchForm />
       </div>
-      {categories.length > 0 && (
-        <div className="hidden border-t border-border bg-card md:block">
-          <nav aria-label="Product categories" className="mx-auto flex h-10 max-w-7xl items-center gap-1 overflow-x-auto px-6 lg:px-8">
-            <Suspense fallback={null}>
-              <DesktopCategoryLinks categories={categories} />
-            </Suspense>
-          </nav>
-        </div>
-      )}
     </header>
   );
 }
