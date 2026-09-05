@@ -241,7 +241,7 @@ Tests use an in-memory SQLite database and mock Supabase Storage.
 | `APP_NAME` | No | OpenAPI application title |
 | `APP_ENV` | No | Environment label |
 | `DEBUG` | No | FastAPI debug mode |
-| `PUBLIC_BASE_URL` | Yes for sharing | Base address embedded in public order links |
+| `PUBLIC_BASE_URL` | Yes for sharing | Public HTTPS API address embedded in order links |
 | `DATABASE_BACKEND` | Yes | `sqlite` or `postgresql`; Compose supplies it |
 | `SQLITE_PATH` | SQLite only | SQLite file path; Docker uses `/data/ecommerce.db` |
 | `DATABASE_URL` | PostgreSQL only | SQLAlchemy/Supabase pooler connection string |

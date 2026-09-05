@@ -306,7 +306,10 @@ GET /orders/{public_token}/share
 ```
 
 Returns HTML for people and chat-platform crawlers. It includes Open Graph title, description,
-URL, and image metadata. The first product image is used, falling back to the business logo.
+URL, image, and image-alt metadata, plus `noindex` directives. The page shows every snapshotted
+item and uses the first product image for the chat preview, falling back to the business logo.
+In production, `PUBLIC_BASE_URL` must be the publicly reachable HTTPS API address so Telegram can
+load the secret order page and its preview metadata.
 
 ## Admin authentication
 

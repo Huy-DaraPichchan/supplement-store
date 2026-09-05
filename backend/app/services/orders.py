@@ -148,8 +148,7 @@ def prepared_message(order: Order, public_order_url: str) -> str:
 def checkout_links(
     order: Order, business: BusinessSettings
 ) -> tuple[Channel, str, str | None, str, str]:
-    base_url = get_settings().public_base_url.rstrip("/")
-    order_url = f"{base_url}/orders/{order.public_token}/share"
+    order_url = public_order_url(order)
     message = prepared_message(order, order_url)
     encoded_message = urllib.parse.quote(message, safe="")
     channels = order.selected_channels.split(",")
@@ -166,28 +165,78 @@ def checkout_links(
     return preferred, urls[preferred.value], fallback, order_url, message
 
 
+def public_order_url(order: Order) -> str:
+    base_url = get_settings().public_base_url.rstrip("/")
+    return f"{base_url}/orders/{order.public_token}/share"
+
+
 def order_share_html(order: Order, business: BusinessSettings, order_url: str) -> str:
     description = ", ".join(f"{item.product_name} ×{item.quantity}" for item in order.items)
     total = format_money(order, order.total_usd_cents, order.total_khr)
     title = f"{order.order_number} — {total}"
-    first_image = next((public_url(item.image_path) for item in order.items if item.image_path), None)
-    image = first_image or business.logo_url
-    image_meta = (
-        f'<meta property="og:image" content="{html.escape(image, quote=True)}">' if image else ""
+    first_image_item = next((item for item in order.items if item.image_path), None)
+    image = public_url(first_image_item.image_path) if first_image_item else business.logo_url
+    image_alt = (
+        f"{first_image_item.product_name} in {order.order_number}"
+        if first_image_item
+        else f"{business.company_name} logo"
     )
+    image_meta = ""
+    if image:
+        image_meta = (
+            f'<meta property="og:image" content="{html.escape(image, quote=True)}">'
+            f'<meta property="og:image:alt" content="{html.escape(image_alt, quote=True)}">'
+        )
     rows = "".join(
-        f"<li>{html.escape(item.product_name)} × {item.quantity} — "
-        f"{html.escape(format_money(order, item.line_total_usd_cents, item.line_total_khr))}</li>"
+        '<li class="item">'
+        + (
+            '<div class="thumb"><img src="'
+            f'{html.escape(public_url(item.image_path) or "", quote=True)}" '
+            f'alt="{html.escape(item.product_name, quote=True)}"></div>'
+            if item.image_path
+            else '<div class="thumb placeholder" aria-hidden="true">No image</div>'
+        )
+        + '<div class="item-copy">'
+        + f"<h2>{html.escape(item.product_name)}</h2>"
+        + f'<p class="sku">SKU: {html.escape(item.product_sku)}</p>'
+        + '<div class="line">'
+        + f"<span>Quantity: {item.quantity}</span>"
+        + "<strong>"
+        + html.escape(format_money(order, item.line_total_usd_cents, item.line_total_khr))
+        + "</strong></div></div></li>"
         for item in order.items
     )
+    escaped_title = html.escape(title, quote=True)
+    escaped_description = html.escape(description, quote=True)
+    escaped_order_url = html.escape(order_url, quote=True)
+    escaped_status = html.escape(order.status.capitalize())
     return f"""<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
-<meta property="og:type" content="website"><meta property="og:title" content="{html.escape(title, quote=True)}">
-<meta property="og:description" content="{html.escape(description, quote=True)}">
-<meta property="og:url" content="{html.escape(order_url, quote=True)}">{image_meta}
-<style>body{{font-family:system-ui;max-width:640px;margin:3rem auto;padding:0 1rem;color:#222}}li{{margin:.6rem 0}}</style>
-</head><body><h1>{html.escape(order.order_number)}</h1><ul>{rows}</ul><strong>Total: {html.escape(total)}</strong></body></html>"""
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="googlebot" content="noindex, nofollow, noarchive">
+<meta property="og:type" content="website"><meta property="og:title" content="{escaped_title}">
+<meta property="og:description" content="{escaped_description}">
+<meta property="og:url" content="{escaped_order_url}">{image_meta}
+<style>
+:root{{color-scheme:light dark;font-family:system-ui,-apple-system,sans-serif;background:#f7f2f6;color:#241d23}}
+*{{box-sizing:border-box}}body{{margin:0;padding:2rem 1rem}}main{{max-width:680px;margin:auto}}
+.header,.summary{{border:1px solid #ddcfda;border-radius:.7rem;background:#fff;padding:1.25rem}}
+.header{{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}}
+h1{{margin:0;font:600 1.75rem ui-serif,Georgia,serif}}.eyebrow,.sku{{color:#665d65}}
+.eyebrow{{margin:0 0 .25rem}}.status{{border-radius:999px;background:#fff0e4;color:#8a641f;padding:.4rem .7rem;font-weight:700}}
+ul{{list-style:none;margin:1rem 0;padding:0;display:grid;gap:.75rem}}.item{{display:flex;gap:1rem;border:1px solid #ddcfda;border-radius:.7rem;background:#fff;padding:1rem}}
+.thumb{{width:88px;height:88px;flex:none;border-radius:.55rem;background:#f0e8ee;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#665d65;font-size:.75rem}}
+.thumb img{{width:100%;height:100%;object-fit:contain}}.item-copy{{min-width:0;flex:1}}h2{{margin:0;font-size:1rem}}.sku{{margin:.3rem 0 .9rem;font-size:.875rem}}
+.line,.summary{{display:flex;align-items:center;justify-content:space-between;gap:1rem}}.summary{{font-size:1.125rem}}.summary strong{{font-size:1.3rem}}
+@media(max-width:440px){{body{{padding:1rem}}.header{{display:block}}.status{{display:inline-block;margin-top:1rem}}.thumb{{width:72px;height:72px}}.line{{align-items:flex-start;flex-direction:column;gap:.25rem}}}}
+@media(prefers-color-scheme:dark){{:root{{background:#120e11;color:#f8f2f6}}.header,.item,.summary{{background:#211a20;border-color:#493843}}.thumb{{background:#362a32}}.eyebrow,.sku,.placeholder{{color:#c9bdc6}}.status{{background:#3b2a20;color:#d2a84a}}}}
+</style>
+</head><body><main>
+<header class="header"><div><p class="eyebrow">Order details</p><h1>{html.escape(order.order_number)}</h1></div><span class="status">{escaped_status}</span></header>
+<ul>{rows}</ul><div class="summary"><span>Total</span><strong>{html.escape(total)}</strong></div>
+</main></body></html>"""
 
 
 ALLOWED_TRANSITIONS = {

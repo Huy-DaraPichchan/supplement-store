@@ -13,7 +13,7 @@ import {
 import { Check, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "./CartProvider";
 
 export default function CartDrawer() {
@@ -26,6 +26,7 @@ export default function CartDrawer() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [completedOrder, setCompletedOrder] = useState<CheckoutResponse | null>(null);
+  const checkoutStarted = useRef(false);
 
   useEffect(() => {
     if (!open || settings) return;
@@ -37,8 +38,11 @@ export default function CartDrawer() {
         if (nextSettings.default_currency === "KHR" && nextSettings.usd_to_khr_rate) {
           setCurrency("KHR");
         }
-        if (nextSettings.telegram_enabled) setChannel("telegram");
-        else if (nextSettings.messenger_enabled) setChannel("messenger");
+        if (nextSettings.telegram_enabled && nextSettings.telegram_username?.trim()) {
+          setChannel("telegram");
+        } else if (nextSettings.messenger_enabled && nextSettings.messenger_url?.trim()) {
+          setChannel("messenger");
+        }
       })
       .catch(() => {
         if (!cancelled) setError("Store ordering options could not be loaded.");
@@ -48,8 +52,17 @@ export default function CartDrawer() {
     };
   }, [open, settings]);
 
+  useEffect(() => {
+    if (completedOrder?.preferred_channel !== "telegram") return;
+    const redirect = window.setTimeout(() => {
+      window.location.assign(completedOrder.preferred_url);
+    }, 1000);
+    return () => window.clearTimeout(redirect);
+  }, [completedOrder]);
+
   async function handleCheckout() {
-    if (!channel || items.length === 0) return;
+    if (!channel || items.length === 0 || checkoutStarted.current) return;
+    checkoutStarted.current = true;
     setSubmitting(true);
     setError(null);
     try {
@@ -64,6 +77,7 @@ export default function CartDrawer() {
       setCompletedOrder(order);
       clearCart();
     } catch (checkoutError) {
+      checkoutStarted.current = false;
       setError(
         checkoutError instanceof ApiError
           ? checkoutError.message
@@ -75,8 +89,12 @@ export default function CartDrawer() {
   }
 
   const availableChannels: CheckoutChannel[] = [];
-  if (settings?.telegram_enabled) availableChannels.push("telegram");
-  if (settings?.messenger_enabled) availableChannels.push("messenger");
+  if (settings?.telegram_enabled && settings.telegram_username?.trim()) {
+    availableChannels.push("telegram");
+  }
+  if (settings?.messenger_enabled && settings.messenger_url?.trim()) {
+    availableChannels.push("messenger");
+  }
 
   return (
     <Dialog.Root
@@ -84,6 +102,7 @@ export default function CartDrawer() {
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen);
         if (!nextOpen) {
+          checkoutStarted.current = false;
           setError(null);
           setCompletedOrder(null);
         }
@@ -128,11 +147,17 @@ export default function CartDrawer() {
               </p>
               <a
                 href={completedOrder.preferred_url}
-                target="_blank"
-                rel="noreferrer"
                 className="mt-6 inline-flex h-11 items-center justify-center rounded-md bg-primary px-5 text-base font-semibold text-primary-foreground shadow-card transition-[background-color,box-shadow] hover:bg-primary-hover hover:shadow-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
-                Continue in {completedOrder.preferred_channel === "telegram" ? "Telegram" : "Messenger"}
+                Open {completedOrder.preferred_channel === "telegram" ? "Telegram" : "Messenger"}
+              </a>
+              <a
+                href={completedOrder.public_url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 text-sm font-medium text-primary underline-offset-4 hover:underline"
+              >
+                View order details
               </a>
             </div>
           ) : items.length === 0 ? (
@@ -223,7 +248,7 @@ export default function CartDrawer() {
                 {error && <p role="alert" className="mt-3 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
 
                 <button type="button" disabled={!channel || submitting} onClick={handleCheckout} className="mt-4 flex h-11 w-full items-center justify-center rounded-md bg-primary text-base font-semibold text-primary-foreground shadow-card transition-[background-color,box-shadow] hover:bg-primary-hover hover:shadow-raised disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none">
-                  {submitting ? "Creating order…" : "Create chat order"}
+                  {submitting ? "Creating order…" : "Proceed to payment"}
                 </button>
               </div>
             </>

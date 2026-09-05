@@ -56,6 +56,7 @@ type CheckoutPayload = {
 export type CheckoutResponse = {
   order_number: string;
   public_token: string;
+  public_url: string;
   total_usd_cents: number;
   total_khr: number | null;
   display_currency: Currency;

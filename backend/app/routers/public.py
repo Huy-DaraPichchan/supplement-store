@@ -2,7 +2,7 @@ import uuid
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import HTMLResponse
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -19,6 +19,7 @@ from app.services.orders import (
     get_business_settings,
     get_order_by_token,
     order_share_html,
+    public_order_url,
 )
 from app.services.storage import public_url
 
@@ -138,8 +139,10 @@ def public_order(token: uuid.UUID, db: Session = Depends(get_db)):
 
 
 @router.get("/orders/{token}/share", response_class=HTMLResponse)
-def share_order(token: uuid.UUID, request: Request, db: Session = Depends(get_db)):
+def share_order(token: uuid.UUID, db: Session = Depends(get_db)):
     order = get_order_by_token(db, token)
     business = get_business_settings(db)
-    order_url = str(request.url)
-    return HTMLResponse(order_share_html(order, business, order_url))
+    return HTMLResponse(
+        order_share_html(order, business, public_order_url(order)),
+        headers={"X-Robots-Tag": "noindex, nofollow, noarchive"},
+    )
