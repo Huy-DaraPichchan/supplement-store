@@ -2,19 +2,8 @@
 import ProductGrid from "@/components/ProductGrid";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import { Suspense } from "react";
-import { Variants } from "motion/react";
 import { TextGenerateEffect } from "@/components/ui/TextGenerateEffect";
 import { AnimatedHero } from "@/components/ui/AnimatedHero";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.12, delayChildren: 0.6 } },
-};
-
-const item: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 1, ease: "easeOut" } },
-};
 
 export default function ProductsPage() {
   return (

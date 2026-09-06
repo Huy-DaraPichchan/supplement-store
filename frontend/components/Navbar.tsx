@@ -19,63 +19,32 @@ const navItems = [
 
 function NavLinks({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname();
+
   return navItems.map((item) => {
     const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+    const className = `${mobile ? "flex h-11 items-center rounded-md px-3" : "py-2"} text-base font-medium transition-colors duration-150 ${
+      active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+    }`;
+
+    if (mobile) {
+      return (
+        <Dialog.Close
+          key={item.href}
+          nativeButton={false}
+          render={<Link href={item.href} aria-current={active ? "page" : undefined} />}
+          className={className}
+        >
+          {item.name}
+        </Dialog.Close>
+      );
+    }
+
     return (
-      <Link
-        key={item.href}
-        href={item.href}
-        aria-current={active ? "page" : undefined}
-        className={`${mobile ? "flex h-11 items-center rounded-md px-3" : "py-2"} text-base font-medium transition-colors duration-150 ${
-          active ? "text-primary" : "text-muted-foreground hover:text-foreground"
-        }`}
-      >
+      <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={className}>
         {item.name}
       </Link>
     );
   });
-}
-
-function MobileCategoryLinks({ categories }: { categories: Category[] }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const activeCategory = pathname === "/products" ? searchParams.get("category") : null;
-  const shopAllActive = pathname === "/products" && !activeCategory;
-
-  return (
-    <>
-      <Dialog.Close
-        nativeButton={false}
-        render={<Link href="/products" />}
-        aria-current={shopAllActive ? "page" : undefined}
-        className={`flex min-h-11 items-center justify-between rounded-md px-3 text-base font-medium transition-colors ${
-          shopAllActive
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:bg-primary-soft hover:text-primary"
-        }`}
-      >
-        Shop all<ChevronRight className="size-4" />
-      </Dialog.Close>
-      {categories.map((category) => {
-        const active = activeCategory === category.slug;
-        return (
-          <Dialog.Close
-            key={category.id}
-            nativeButton={false}
-            render={<Link href={`/products?category=${encodeURIComponent(category.slug)}`} />}
-            aria-current={active ? "page" : undefined}
-            className={`flex min-h-11 items-center justify-between rounded-md px-3 text-base font-medium transition-colors ${
-              active
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-primary-soft hover:text-primary"
-            }`}
-          >
-            {category.name}<ChevronRight className="size-4" />
-          </Dialog.Close>
-        );
-      })}
-    </>
-  );
 }
 
 function MobileNavigation({ categories }: { categories: Category[] }) {
@@ -101,16 +70,6 @@ function MobileNavigation({ categories }: { categories: Category[] }) {
           <nav className="mt-6 flex flex-col gap-1">
             <NavLinks mobile />
           </nav>
-          {categories.length > 0 && (
-            <div className="mt-6 border-t border-border pt-5">
-              <p className="mb-2 px-3 text-sm font-semibold text-muted-foreground">Shop categories</p>
-              <nav aria-label="Product categories" className="flex flex-col gap-1">
-                <Suspense fallback={null}>
-                  <MobileCategoryLinks categories={categories} />
-                </Suspense>
-              </nav>
-            </div>
-          )}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

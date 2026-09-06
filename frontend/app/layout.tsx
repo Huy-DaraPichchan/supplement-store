@@ -7,10 +7,13 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: {
-    default: "PureVita",
+    default: "PureVista",
     template: "%s | PureVita",
   },
   description: "A straightforward marketplace for everyday wellness products.",
+  icons: {
+    icon: "/pure-vista.svg",
+  },
 };
 
 export default function RootLayout({
