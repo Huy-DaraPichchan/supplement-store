@@ -94,7 +94,7 @@ Common status codes:
 | `GET` | `/products/{slug}` | Read one active product |
 | `POST` | `/orders` | Create a guest order and chat handoff |
 | `GET` | `/orders/{public_token}` | Read a public order snapshot |
-| `GET` | `/orders/{public_token}/share` | Render the Open Graph order page |
+| `GET` | `/orders/{public_token}/share` | Redirect legacy links to the storefront order page |
 
 ### Admin dashboard
 
@@ -136,7 +136,7 @@ GET /settings
 ```
 
 Returns storefront identity, enabled chat channels, and the current exchange rate. USD is always
-the default display currency. The frontend should disable KHR when `usd_to_khr_rate` is `null`.
+the default display currency. The exchange rate defaults to 4000 KHR per USD and cannot be null.
 
 ```bash
 curl "$BASE_URL/settings"
@@ -271,8 +271,8 @@ curl -X POST "$BASE_URL/orders" \
       "line_total_khr": 102500
     }
   ],
-  "public_url": "https://api.example.com/orders/c005f55f-9dfd-4d2f-9475-6597600c9da7/share",
-  "prepared_message": "New Order ORD-720331B2\n\nVitamin C × 2 — $25.00\n\nTotal: $25.00\nOrder details: https://api.example.com/orders/.../share",
+  "public_url": "https://store.example.com/orders/c005f55f-9dfd-4d2f-9475-6597600c9da7",
+  "prepared_message": "New Order ORD-720331B2\n\nVitamin C × 2 — $25.00\n\nTotal: $25.00 (៛102,500)\nOrder details:\nhttps://store.example.com/orders/...",
   "preferred_channel": "telegram",
   "preferred_url": "https://t.me/seller_username?text=New%20Order...",
   "fallback_url": "https://m.me/example.page"
@@ -280,8 +280,8 @@ curl -X POST "$BASE_URL/orders" \
 ```
 
 The order is rejected when a requested product is inactive, missing, or does not have enough
-stock. KHR checkout is rejected until a positive exchange rate is configured. A selected channel
-must also be enabled and have its seller address configured.
+stock. Every order snapshots both USD and KHR totals using the current positive exchange rate.
+A selected channel must also be enabled and have its seller address configured.
 
 When both channels are selected, Telegram is preferred and Messenger is returned as fallback.
 Both platforms require the customer to perform their final Send confirmation.
@@ -299,17 +299,16 @@ curl "$BASE_URL/orders/c005f55f-9dfd-4d2f-9475-6597600c9da7"
 Returns the saved order snapshot. The token is intentionally hard to guess but should still be
 treated as private.
 
-### Share preview page
+### Legacy share URL
 
 ```http
 GET /orders/{public_token}/share
 ```
 
-Returns HTML for people and chat-platform crawlers. It includes Open Graph title, description,
-URL, image, and image-alt metadata, plus `noindex` directives. The page shows every snapshotted
-item and uses the first product image for the chat preview, falling back to the business logo.
-In production, `PUBLIC_BASE_URL` must be the publicly reachable HTTPS API address so Telegram can
-load the secret order page and its preview metadata.
+Redirects previously sent links to the storefront order page. New checkout messages link directly
+to `{PUBLIC_BASE_URL}/orders/{public_token}`. The frontend renders the order and its Open Graph
+metadata. In production, `PUBLIC_BASE_URL` must be the publicly reachable HTTPS frontend address
+so Telegram can recognize and open the link.
 
 ## Admin authentication
 
@@ -422,7 +421,8 @@ GET /admin/settings
 PATCH /admin/settings
 ```
 
-The patch endpoint updates only supplied fields. A channel cannot be enabled without its address.
+The patch endpoint updates only supplied fields. A channel cannot be enabled without its address,
+and the exchange rate must remain a positive number.
 
 ```bash
 curl -X PATCH "$BASE_URL/admin/settings" \

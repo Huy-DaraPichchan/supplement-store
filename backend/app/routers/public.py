@@ -3,7 +3,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import HTMLResponse
+from fastapi.responses import RedirectResponse
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
@@ -18,7 +18,7 @@ from app.services.orders import (
     create_order,
     get_business_settings,
     get_order_by_token,
-    order_share_html,
+    order_response,
     public_order_url,
 )
 from app.services.storage import public_url
@@ -26,23 +26,26 @@ from app.services.storage import public_url
 router = APIRouter()
 
 
-def product_response(product: Product, rate: Decimal | None) -> ProductResponse:
-    price_khr = None
-    if rate:
-        price_khr = int(
-            (Decimal(product.price_usd_cents) * rate / 100).quantize(Decimal("1"), ROUND_HALF_UP)
-        )
-    return ProductResponse.model_validate(product).model_copy(
-        update={"image_url": public_url(product.image_path), "price_khr": price_khr}
+def product_response(product: Product, rate: Decimal) -> ProductResponse:
+    price_khr = int(
+        (Decimal(product.price_usd_cents) * rate / 100).quantize(Decimal("1"), ROUND_HALF_UP)
     )
-
-
-def order_response(order) -> OrderResponse:
-    response = OrderResponse.model_validate(order)
-    response.items = [
-        item.model_copy(update={"image_url": public_url(item.image_path)}) for item in response.items
-    ]
-    return response
+    return ProductResponse(
+        id=product.id,
+        category_id=product.category_id,
+        name=product.name,
+        slug=product.slug,
+        sku=product.sku,
+        description=product.description,
+        price_usd_cents=product.price_usd_cents,
+        price_khr=price_khr,
+        stock=product.stock,
+        image_path=product.image_path,
+        image_url=public_url(product.image_path),
+        is_active=product.is_active,
+        created_at=product.created_at,
+        updated_at=product.updated_at,
+    )
 
 
 @router.get("/health")
@@ -138,11 +141,7 @@ def public_order(token: uuid.UUID, db: Session = Depends(get_db)):
     return order_response(get_order_by_token(db, token))
 
 
-@router.get("/orders/{token}/share", response_class=HTMLResponse)
+@router.get("/orders/{token}/share", response_class=RedirectResponse)
 def share_order(token: uuid.UUID, db: Session = Depends(get_db)):
     order = get_order_by_token(db, token)
-    business = get_business_settings(db)
-    return HTMLResponse(
-        order_share_html(order, business, public_order_url(order)),
-        headers={"X-Robots-Tag": "noindex, nofollow, noarchive"},
-    )
+    return RedirectResponse(public_order_url(order), status_code=307)

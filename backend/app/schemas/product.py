@@ -50,4 +50,3 @@ class ProductResponse(BaseModel):
 class ImageUploadResponse(BaseModel):
     image_path: str
     public_url: str
-

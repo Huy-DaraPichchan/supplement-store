@@ -14,7 +14,7 @@ type CartContextValue = {
   items: CartItem[];
   cartCount: number;
   totalUsd: number;
-  totalKhr: number | null;
+  totalKhr: number;
   addToCart: (product: Product, quantity?: number) => void;
   setQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
@@ -32,6 +32,7 @@ function readStoredCart(): CartItem[] {
         item?.product &&
         typeof item.product.id === "string" &&
         typeof item.product.name === "string" &&
+        typeof item.product.priceKhr === "number" &&
         typeof item.quantity === "number" &&
         item.quantity > 0,
     );
@@ -98,10 +99,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       (total, item) => total + item.product.price * item.quantity,
       0,
     );
-    const hasKhrPrices = items.length > 0 && items.every((item) => item.product.priceKhr !== null);
-    const totalKhr = hasKhrPrices
-      ? items.reduce((total, item) => total + (item.product.priceKhr || 0) * item.quantity, 0)
-      : null;
+    const totalKhr = items.reduce(
+      (total, item) => total + item.product.priceKhr * item.quantity,
+      0,
+    );
 
     return {
       items,

@@ -10,5 +10,5 @@ export interface Product {
   slug: string;
   sku: string;
   stock: number;
-  priceKhr: number | null;
+  priceKhr: number;
 }

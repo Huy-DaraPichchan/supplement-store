@@ -2,12 +2,8 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 import { getCategories, type Category } from "@/lib/api";
-<<<<<<< Updated upstream
 import { ChevronRight, Menu, X } from "lucide-react";
 import Image from "next/image";
-=======
-import { Menu, X } from "lucide-react";
->>>>>>> Stashed changes
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";

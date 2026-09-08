@@ -79,7 +79,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           <h1 className="font-heading mt-4 text-2xl font-semibold tracking-tight sm:text-4xl">{product.name}</h1>
           <div className="mt-5 rounded-lg bg-muted px-4 py-3">
             <p className="text-2xl font-semibold tabular-nums">${product.price.toFixed(2)}</p>
-            {product.priceKhr !== null && <p className="mt-1 text-base text-muted-foreground">៛{product.priceKhr.toLocaleString()}</p>}
+            <p className="mt-1 text-base text-muted-foreground">៛{product.priceKhr.toLocaleString()}</p>
           </div>
           <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground">
             {product.description || "Product details will be added by the store."}

@@ -14,7 +14,7 @@ class BusinessSettingsUpdate(BaseModel):
     messenger_url: str | None = Field(default=None, max_length=500)
     telegram_enabled: bool | None = None
     messenger_enabled: bool | None = None
-    usd_to_khr_rate: Decimal | None = Field(default=None, gt=0)
+    usd_to_khr_rate: Decimal = Field(default=Decimal("4000"), gt=0)
 
 
 class BusinessSettingsResponse(BaseModel):
@@ -28,8 +28,7 @@ class BusinessSettingsResponse(BaseModel):
     messenger_url: str | None
     telegram_enabled: bool
     messenger_enabled: bool
-    usd_to_khr_rate: Decimal | None
+    usd_to_khr_rate: Decimal
     default_currency: str = "USD"
 
     model_config = ConfigDict(from_attributes=True)
-

@@ -33,9 +33,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="mt-auto flex items-end justify-between gap-2 pt-3">
           <div className="min-w-0">
             <p className="text-base font-semibold tabular-nums sm:text-lg">${product.price.toFixed(2)}</p>
-            {product.priceKhr !== null && (
-              <p className="truncate text-xs text-muted-foreground">៛{product.priceKhr.toLocaleString()}</p>
-            )}
+            <p className="truncate text-xs text-muted-foreground">៛{product.priceKhr.toLocaleString()}</p>
           </div>
           <button
             type="button"

@@ -6,11 +6,9 @@ import {
   createOrder,
   getBusinessSettings,
   type BusinessSettings,
-  type CheckoutChannel,
-  type CheckoutResponse,
   type Currency,
 } from "@/lib/api";
-import { Check, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { MessageCircle, Minus, Plus, Send, ShoppingBag, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -21,11 +19,10 @@ export default function CartDrawer() {
     useCart();
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState<BusinessSettings | null>(null);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [currency, setCurrency] = useState<Currency>("USD");
-  const [channel, setChannel] = useState<CheckoutChannel | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [completedOrder, setCompletedOrder] = useState<CheckoutResponse | null>(null);
   const checkoutStarted = useRef(false);
 
   useEffect(() => {
@@ -35,33 +32,21 @@ export default function CartDrawer() {
       .then((nextSettings) => {
         if (cancelled) return;
         setSettings(nextSettings);
-        if (nextSettings.default_currency === "KHR" && nextSettings.usd_to_khr_rate) {
+        if (nextSettings.default_currency === "KHR") {
           setCurrency("KHR");
         }
-        if (nextSettings.telegram_enabled && nextSettings.telegram_username?.trim()) {
-          setChannel("telegram");
-        } else if (nextSettings.messenger_enabled && nextSettings.messenger_url?.trim()) {
-          setChannel("messenger");
-        }
+        setSettingsLoaded(true);
       })
       .catch(() => {
-        if (!cancelled) setError("Store ordering options could not be loaded.");
+        if (!cancelled) setSettingsLoaded(true);
       });
     return () => {
       cancelled = true;
     };
   }, [open, settings]);
 
-  useEffect(() => {
-    if (completedOrder?.preferred_channel !== "telegram") return;
-    const redirect = window.setTimeout(() => {
-      window.location.assign(completedOrder.preferred_url);
-    }, 1000);
-    return () => window.clearTimeout(redirect);
-  }, [completedOrder]);
-
   async function handleCheckout() {
-    if (!channel || items.length === 0 || checkoutStarted.current) return;
+    if (!telegramAvailable || items.length === 0 || checkoutStarted.current) return;
     checkoutStarted.current = true;
     setSubmitting(true);
     setError(null);
@@ -72,10 +57,10 @@ export default function CartDrawer() {
           quantity: item.quantity,
         })),
         display_currency: currency,
-        channels: [channel],
+        channels: ["telegram"],
       });
-      setCompletedOrder(order);
       clearCart();
+      window.location.assign(order.preferred_url);
     } catch (checkoutError) {
       checkoutStarted.current = false;
       setError(
@@ -88,13 +73,9 @@ export default function CartDrawer() {
     }
   }
 
-  const availableChannels: CheckoutChannel[] = [];
-  if (settings?.telegram_enabled && settings.telegram_username?.trim()) {
-    availableChannels.push("telegram");
-  }
-  if (settings?.messenger_enabled && settings.messenger_url?.trim()) {
-    availableChannels.push("messenger");
-  }
+  const telegramAvailable = Boolean(
+    settings?.telegram_enabled && settings.telegram_username?.trim(),
+  );
 
   return (
     <Dialog.Root
@@ -104,7 +85,6 @@ export default function CartDrawer() {
         if (!nextOpen) {
           checkoutStarted.current = false;
           setError(null);
-          setCompletedOrder(null);
         }
       }}
     >
@@ -136,31 +116,7 @@ export default function CartDrawer() {
             </Dialog.Close>
           </div>
 
-          {completedOrder ? (
-            <div className="flex flex-1 flex-col items-center justify-center px-5 pb-[env(safe-area-inset-bottom)] text-center sm:px-6">
-              <span className="flex size-12 items-center justify-center rounded-full bg-success/15 text-success shadow-card">
-                <Check className="size-6" />
-              </span>
-              <h2 className="mt-4 text-xl font-semibold">Order created</h2>
-              <p className="mt-2 text-base text-muted-foreground">
-                {completedOrder.order_number} is ready to send to the store.
-              </p>
-              <a
-                href={completedOrder.preferred_url}
-                className="mt-6 inline-flex h-11 items-center justify-center rounded-md bg-primary px-5 text-base font-semibold text-primary-foreground shadow-card transition-[background-color,box-shadow] hover:bg-primary-hover hover:shadow-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              >
-                Open {completedOrder.preferred_channel === "telegram" ? "Telegram" : "Messenger"}
-              </a>
-              <a
-                href={completedOrder.public_url}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 text-sm font-medium text-primary underline-offset-4 hover:underline"
-              >
-                View order details
-              </a>
-            </div>
-          ) : items.length === 0 ? (
+          {items.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center px-5 pb-[env(safe-area-inset-bottom)] text-center sm:px-6">
               <ShoppingBag className="size-10 text-muted-foreground" />
               <h2 className="mt-4 font-semibold">Your cart is empty</h2>
@@ -216,10 +172,10 @@ export default function CartDrawer() {
               <div className="max-h-[55dvh] shrink-0 overflow-y-auto border-t border-border bg-card px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-card sm:p-5">
                 <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-3 text-base">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <strong>{currency === "KHR" && totalKhr !== null ? `៛${totalKhr.toLocaleString()}` : `$${totalUsd.toFixed(2)}`}</strong>
+                  <strong>{currency === "KHR" ? `៛${totalKhr.toLocaleString()}` : `$${totalUsd.toFixed(2)}`}</strong>
                 </div>
 
-                {settings?.usd_to_khr_rate && totalKhr !== null && (
+                {settings && (
                   <div className="mt-4 grid grid-cols-2 gap-2" aria-label="Display currency">
                     {(["USD", "KHR"] as Currency[]).map((option) => (
                       <button key={option} type="button" onClick={() => setCurrency(option)} className={`h-11 rounded-md border text-base transition-colors ${currency === option ? "border-primary bg-primary-soft text-primary" : "border-border bg-background text-muted-foreground hover:bg-muted"}`}>
@@ -229,27 +185,32 @@ export default function CartDrawer() {
                   </div>
                 )}
 
-                {availableChannels.length > 0 ? (
-                  <fieldset className="mt-4">
-                    <legend className="mb-2 text-sm font-medium text-muted-foreground">Continue your order with</legend>
-                    <div className="grid grid-cols-2 gap-2">
-                      {availableChannels.map((option) => (
-                        <label key={option} className={`flex h-11 cursor-pointer items-center justify-center rounded-md border text-base capitalize transition-colors ${channel === option ? "border-primary bg-primary-soft text-primary" : "border-border bg-background text-muted-foreground hover:bg-muted"}`}>
-                          <input type="radio" name="checkout-channel" value={option} checked={channel === option} onChange={() => setChannel(option)} className="sr-only" />
-                          {option}
-                        </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                ) : settings ? (
-                  <p className="mt-4 rounded-md bg-warm-accent-soft px-3 py-2 text-sm text-warning">Chat ordering has not been configured by the store yet.</p>
-                ) : null}
+                <fieldset className="mt-4">
+                  <legend className="mb-2 text-sm font-medium text-muted-foreground">Contact seller via</legend>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      disabled={!telegramAvailable || submitting}
+                      onClick={handleCheckout}
+                      className="flex min-h-14 flex-col items-center justify-center rounded-md bg-primary px-2 text-sm font-semibold text-primary-foreground shadow-card transition-[background-color,box-shadow] hover:bg-primary-hover hover:shadow-raised disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
+                    >
+                      <span className="flex items-center gap-2"><Send className="size-4" /> Telegram</span>
+                      <span className="mt-0.5 text-xs font-normal opacity-80">
+                        {submitting ? "Creating order…" : telegramAvailable ? "Create order & open" : settingsLoaded ? "Not configured" : "Checking…"}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled
+                      className="flex min-h-14 flex-col items-center justify-center rounded-md border border-border bg-muted px-2 text-sm font-semibold text-muted-foreground"
+                    >
+                      <span className="flex items-center gap-2"><MessageCircle className="size-4" /> Messenger</span>
+                      <span className="mt-0.5 text-xs font-normal">Coming later</span>
+                    </button>
+                  </div>
+                </fieldset>
 
                 {error && <p role="alert" className="mt-3 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
-
-                <button type="button" disabled={!channel || submitting} onClick={handleCheckout} className="mt-4 flex h-11 w-full items-center justify-center rounded-md bg-primary text-base font-semibold text-primary-foreground shadow-card transition-[background-color,box-shadow] hover:bg-primary-hover hover:shadow-raised disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none">
-                  {submitting ? "Creating order…" : "Proceed to payment"}
-                </button>
               </div>
             </>
           )}

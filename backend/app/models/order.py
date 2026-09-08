@@ -17,9 +17,9 @@ class Order(Base):
     status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
     selected_channels: Mapped[str] = mapped_column(String(30))
     display_currency: Mapped[str] = mapped_column(String(3), default="USD")
-    exchange_rate: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    exchange_rate: Mapped[Decimal] = mapped_column(Numeric(12, 4), nullable=False)
     total_usd_cents: Mapped[int] = mapped_column(Integer)
-    total_khr: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    total_khr: Mapped[int] = mapped_column(Integer, nullable=False)
     inventory_deducted: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True
@@ -49,7 +49,7 @@ class OrderItem(Base):
     quantity: Mapped[int] = mapped_column(Integer)
     unit_price_usd_cents: Mapped[int] = mapped_column(Integer)
     line_total_usd_cents: Mapped[int] = mapped_column(Integer)
-    unit_price_khr: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    line_total_khr: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    unit_price_khr: Mapped[int] = mapped_column(Integer, nullable=False)
+    line_total_khr: Mapped[int] = mapped_column(Integer, nullable=False)
 
     order = relationship("Order", back_populates="items")

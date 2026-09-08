@@ -133,27 +133,30 @@ export default function ProductGrid() {
           </div>
         </aside>
 
-        <div className="mb-5 flex flex-row flex-nowrap items-center gap-2 overflow-x-auto rounded-xl border border-border bg-card p-2.5 shadow-card sm:gap-3 sm:p-4">
-          <div className="min-w-[8rem] flex-1">
-            <CatalogSearch query={query} />
-          </div>
-          <div className="flex shrink-0 flex-row items-center gap-2 sm:gap-3">
-            <MobileFilters
-              activeCount={activeFilterCount}
-              categories={categories}
-              category={category}
-              inStock={inStock}
-              onCategoryChange={(value) => setParam("category", value)}
-              onStockChange={(value) =>
-                setParam("in_stock", value ? "true" : undefined)
-              }
-            />
+        <div className="min-w-0">
+          <div className="mb-5 flex flex-row flex-nowrap items-center gap-2 overflow-x-auto rounded-xl border border-border bg-card p-2.5 shadow-card sm:gap-3 sm:p-4">
+            <div className="min-w-[8rem] flex-1">
+              <CatalogSearch query={query} />
+            </div>
+            <div className="flex shrink-0 flex-row items-center gap-2 sm:gap-3">
+              <MobileFilters
+                activeCount={activeFilterCount}
+                categories={categories}
+                category={category}
+                inStock={inStock}
+                onCategoryChange={(value) => setParam("category", value)}
+                onStockChange={(value) =>
+                  setParam("in_stock", value ? "true" : undefined)
+                }
+              />
 
-            <SortSelect
-              sort={sort}
-              onSortChange={(value) => setParam("sort", value)}
-            />
+              <SortSelect
+                sort={sort}
+                onSortChange={(value) => setParam("sort", value)}
+              />
+            </div>
           </div>
+          <CatalogResults query={productQuery} />
         </div>
       </div>
     </section>
@@ -295,13 +298,7 @@ function CatalogSearch({ query }: { query: string }) {
   );
 }
 
-function CatalogResults({
-  query,
-  onClear,
-}: {
-  query: ProductQuery;
-  onClear: () => void;
-}) {
+function CatalogResults({ query }: { query: ProductQuery }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);

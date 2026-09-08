@@ -1,4 +1,3 @@
-import html
 import uuid
 import urllib.parse
 from decimal import Decimal, ROUND_HALF_UP
@@ -9,7 +8,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.config import get_settings
 from app.models import BusinessSettings, Order, OrderItem, Product
-from app.schemas.order import Channel, Currency, OrderCreate
+from app.schemas.order import Channel, Currency, OrderCreate, OrderResponse
 from app.services.storage import public_url
 
 
@@ -32,12 +31,6 @@ def create_order(db: Session, payload: OrderCreate) -> tuple[Order, BusinessSett
     by_id = {product.id: product for product in products}
     business = get_business_settings(db)
 
-    if payload.display_currency == Currency.KHR and not business.usd_to_khr_rate:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="KHR checkout is unavailable until an exchange rate is configured",
-        )
-
     requested_channels = set(payload.channels)
     if Channel.TELEGRAM in requested_channels and (
         not business.telegram_enabled or not business.telegram_username
@@ -57,7 +50,7 @@ def create_order(db: Session, payload: OrderCreate) -> tuple[Order, BusinessSett
         display_currency=payload.display_currency.value,
         exchange_rate=business.usd_to_khr_rate,
         total_usd_cents=0,
-        total_khr=0 if business.usd_to_khr_rate else None,
+        total_khr=0,
     )
     order.order_number = f"ORD-{order_id.hex[:8].upper()}"
 
@@ -71,16 +64,8 @@ def create_order(db: Session, payload: OrderCreate) -> tuple[Order, BusinessSett
                 detail=f"insufficient stock for {product.name}",
             )
         line_usd = product.price_usd_cents * requested.quantity
-        unit_khr = (
-            khr_amount(product.price_usd_cents, business.usd_to_khr_rate)
-            if business.usd_to_khr_rate
-            else None
-        )
-        line_khr = (
-            khr_amount(line_usd, business.usd_to_khr_rate)
-            if business.usd_to_khr_rate
-            else None
-        )
+        unit_khr = khr_amount(product.price_usd_cents, business.usd_to_khr_rate)
+        line_khr = khr_amount(line_usd, business.usd_to_khr_rate)
         order.items.append(
             OrderItem(
                 product_id=product.id,
@@ -95,8 +80,7 @@ def create_order(db: Session, payload: OrderCreate) -> tuple[Order, BusinessSett
             )
         )
         order.total_usd_cents += line_usd
-        if order.total_khr is not None and line_khr is not None:
-            order.total_khr += line_khr
+        order.total_khr += line_khr
 
     db.add(order)
     db.commit()
@@ -122,10 +106,27 @@ def get_order_by_id(db: Session, order_id, *, for_update: bool = False) -> Order
     return order
 
 
-def format_money(order: Order, usd_cents: int, khr: int | None) -> str:
-    if order.display_currency == Currency.KHR.value and khr is not None:
+def order_response(order: Order) -> OrderResponse:
+    response = OrderResponse.model_validate(order)
+    response.items = [
+        item.model_copy(update={"image_url": public_url(item.image_path)})
+        for item in response.items
+    ]
+    return response
+
+
+def format_money(order: Order, usd_cents: int, khr: int) -> str:
+    if order.display_currency == Currency.KHR.value:
         return f"៛{khr:,}"
     return f"${usd_cents / 100:,.2f}"
+
+
+def format_order_total(order: Order) -> str:
+    usd = f"${order.total_usd_cents / 100:,.2f}"
+    khr = f"៛{order.total_khr:,}"
+    if order.display_currency == Currency.KHR.value:
+        return f"{khr} ({usd})"
+    return f"{usd} ({khr})"
 
 
 def prepared_message(order: Order, public_order_url: str) -> str:
@@ -138,8 +139,9 @@ def prepared_message(order: Order, public_order_url: str) -> str:
     lines.extend(
         [
             "",
-            f"Total: {format_money(order, order.total_usd_cents, order.total_khr)}",
-            f"Order details: {public_order_url}",
+            f"Total: {format_order_total(order)}",
+            "Order details:",
+            public_order_url,
         ]
     )
     return "\n".join(lines)
@@ -167,76 +169,7 @@ def checkout_links(
 
 def public_order_url(order: Order) -> str:
     base_url = get_settings().public_base_url.rstrip("/")
-    return f"{base_url}/orders/{order.public_token}/share"
-
-
-def order_share_html(order: Order, business: BusinessSettings, order_url: str) -> str:
-    description = ", ".join(f"{item.product_name} ×{item.quantity}" for item in order.items)
-    total = format_money(order, order.total_usd_cents, order.total_khr)
-    title = f"{order.order_number} — {total}"
-    first_image_item = next((item for item in order.items if item.image_path), None)
-    image = public_url(first_image_item.image_path) if first_image_item else business.logo_url
-    image_alt = (
-        f"{first_image_item.product_name} in {order.order_number}"
-        if first_image_item
-        else f"{business.company_name} logo"
-    )
-    image_meta = ""
-    if image:
-        image_meta = (
-            f'<meta property="og:image" content="{html.escape(image, quote=True)}">'
-            f'<meta property="og:image:alt" content="{html.escape(image_alt, quote=True)}">'
-        )
-    rows = "".join(
-        '<li class="item">'
-        + (
-            '<div class="thumb"><img src="'
-            f'{html.escape(public_url(item.image_path) or "", quote=True)}" '
-            f'alt="{html.escape(item.product_name, quote=True)}"></div>'
-            if item.image_path
-            else '<div class="thumb placeholder" aria-hidden="true">No image</div>'
-        )
-        + '<div class="item-copy">'
-        + f"<h2>{html.escape(item.product_name)}</h2>"
-        + f'<p class="sku">SKU: {html.escape(item.product_sku)}</p>'
-        + '<div class="line">'
-        + f"<span>Quantity: {item.quantity}</span>"
-        + "<strong>"
-        + html.escape(format_money(order, item.line_total_usd_cents, item.line_total_khr))
-        + "</strong></div></div></li>"
-        for item in order.items
-    )
-    escaped_title = html.escape(title, quote=True)
-    escaped_description = html.escape(description, quote=True)
-    escaped_order_url = html.escape(order_url, quote=True)
-    escaped_status = html.escape(order.status.capitalize())
-    return f"""<!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{html.escape(title)}</title>
-<meta name="robots" content="noindex, nofollow, noarchive">
-<meta name="googlebot" content="noindex, nofollow, noarchive">
-<meta property="og:type" content="website"><meta property="og:title" content="{escaped_title}">
-<meta property="og:description" content="{escaped_description}">
-<meta property="og:url" content="{escaped_order_url}">{image_meta}
-<style>
-:root{{color-scheme:light dark;font-family:system-ui,-apple-system,sans-serif;background:#f7f2f6;color:#241d23}}
-*{{box-sizing:border-box}}body{{margin:0;padding:2rem 1rem}}main{{max-width:680px;margin:auto}}
-.header,.summary{{border:1px solid #ddcfda;border-radius:.7rem;background:#fff;padding:1.25rem}}
-.header{{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}}
-h1{{margin:0;font:600 1.75rem ui-serif,Georgia,serif}}.eyebrow,.sku{{color:#665d65}}
-.eyebrow{{margin:0 0 .25rem}}.status{{border-radius:999px;background:#fff0e4;color:#8a641f;padding:.4rem .7rem;font-weight:700}}
-ul{{list-style:none;margin:1rem 0;padding:0;display:grid;gap:.75rem}}.item{{display:flex;gap:1rem;border:1px solid #ddcfda;border-radius:.7rem;background:#fff;padding:1rem}}
-.thumb{{width:88px;height:88px;flex:none;border-radius:.55rem;background:#f0e8ee;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#665d65;font-size:.75rem}}
-.thumb img{{width:100%;height:100%;object-fit:contain}}.item-copy{{min-width:0;flex:1}}h2{{margin:0;font-size:1rem}}.sku{{margin:.3rem 0 .9rem;font-size:.875rem}}
-.line,.summary{{display:flex;align-items:center;justify-content:space-between;gap:1rem}}.summary{{font-size:1.125rem}}.summary strong{{font-size:1.3rem}}
-@media(max-width:440px){{body{{padding:1rem}}.header{{display:block}}.status{{display:inline-block;margin-top:1rem}}.thumb{{width:72px;height:72px}}.line{{align-items:flex-start;flex-direction:column;gap:.25rem}}}}
-@media(prefers-color-scheme:dark){{:root{{background:#120e11;color:#f8f2f6}}.header,.item,.summary{{background:#211a20;border-color:#493843}}.thumb{{background:#362a32}}.eyebrow,.sku,.placeholder{{color:#c9bdc6}}.status{{background:#3b2a20;color:#d2a84a}}}}
-</style>
-</head><body><main>
-<header class="header"><div><p class="eyebrow">Order details</p><h1>{html.escape(order.order_number)}</h1></div><span class="status">{escaped_status}</span></header>
-<ul>{rows}</ul><div class="summary"><span>Total</span><strong>{html.escape(total)}</strong></div>
-</main></body></html>"""
+    return f"{base_url}/orders/{order.public_token}"
 
 
 ALLOWED_TRANSITIONS = {

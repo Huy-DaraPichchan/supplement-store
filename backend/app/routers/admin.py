@@ -14,7 +14,12 @@ from app.schemas.order import OrderResponse, OrderStatusUpdate
 from app.schemas.product import ImageUploadResponse, ProductCreate, ProductResponse, ProductUpdate
 from app.schemas.settings import BusinessSettingsResponse, BusinessSettingsUpdate
 from app.services.auth import create_access_token, verify_password
-from app.services.orders import get_business_settings, get_order_by_id, update_order_status
+from app.services.orders import (
+    get_business_settings,
+    get_order_by_id,
+    order_response,
+    update_order_status,
+)
 from app.services.storage import public_url, remove_image, upload_product_image
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -251,7 +256,7 @@ def list_orders(
     )
     if order_status:
         statement = statement.where(Order.status == order_status)
-    return db.scalars(statement).all()
+    return [order_response(order) for order in db.scalars(statement).all()]
 
 
 @router.get("/orders/{order_id}", response_model=OrderResponse)
@@ -260,7 +265,7 @@ def admin_order(
     _: Admin = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    return get_order_by_id(db, order_id)
+    return order_response(get_order_by_id(db, order_id))
 
 
 @router.patch("/orders/{order_id}/status", response_model=OrderResponse)
@@ -270,5 +275,4 @@ def change_order_status(
     _: Admin = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    return update_order_status(db, order_id, payload.status.value)
-
+    return order_response(update_order_status(db, order_id, payload.status.value))

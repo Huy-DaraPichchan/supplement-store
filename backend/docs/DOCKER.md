@@ -52,7 +52,7 @@ SECRET_KEY=replace-with-a-long-random-value
 SUPABASE_URL=https://PROJECT_REF.supabase.co
 SUPABASE_SECRET_KEY=your-server-side-key
 SUPABASE_STORAGE_BUCKET=product-images
-PUBLIC_BASE_URL=http://localhost:8000
+PUBLIC_BASE_URL=http://localhost:3000
 ```
 
 `SUPABASE_URL` must be the project root without `/rest/v1`. Never expose
@@ -241,7 +241,7 @@ Tests use an in-memory SQLite database and mock Supabase Storage.
 | `APP_NAME` | No | OpenAPI application title |
 | `APP_ENV` | No | Environment label |
 | `DEBUG` | No | FastAPI debug mode |
-| `PUBLIC_BASE_URL` | Yes for sharing | Public HTTPS API address embedded in order links |
+| `PUBLIC_BASE_URL` | Yes for sharing | Public HTTPS frontend address embedded in order links |
 | `DATABASE_BACKEND` | Yes | `sqlite` or `postgresql`; Compose supplies it |
 | `SQLITE_PATH` | SQLite only | SQLite file path; Docker uses `/data/ecommerce.db` |
 | `DATABASE_URL` | PostgreSQL only | SQLAlchemy/Supabase pooler connection string |
@@ -293,4 +293,5 @@ Choose another host port:
 API_PORT=8001 docker compose up -d
 ```
 
-Set `PUBLIC_BASE_URL=http://localhost:8001` so generated order links use the same public address.
+Changing the API port does not affect `PUBLIC_BASE_URL`; it should continue to point to the
+frontend. For Telegram testing across devices, use the deployed HTTPS frontend or a public tunnel.

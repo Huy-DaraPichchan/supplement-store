@@ -22,7 +22,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("SUPABASE_SECRET_KEY", "SUPABASE_KEY")
     )
     supabase_storage_bucket: str = "product-images"
-    public_base_url: str = "http://localhost:8000"
+    public_base_url: str = "http://localhost:3000"
 
     @field_validator("database_url", mode="before")
     @classmethod

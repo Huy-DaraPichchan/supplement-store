@@ -19,7 +19,7 @@ type ApiProduct = {
   sku: string;
   description: string;
   price_usd_cents: number;
-  price_khr: number | null;
+  price_khr: number;
   stock: number;
   image_url: string | null;
 };
@@ -43,7 +43,7 @@ export type BusinessSettings = {
   messenger_url: string | null;
   telegram_enabled: boolean;
   messenger_enabled: boolean;
-  usd_to_khr_rate: number | null;
+  usd_to_khr_rate: number;
   default_currency: Currency;
 };
 
@@ -58,7 +58,7 @@ export type CheckoutResponse = {
   public_token: string;
   public_url: string;
   total_usd_cents: number;
-  total_khr: number | null;
+  total_khr: number;
   display_currency: Currency;
   preferred_channel: CheckoutChannel;
   preferred_url: string;

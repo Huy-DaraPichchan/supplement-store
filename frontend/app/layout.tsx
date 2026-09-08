@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { CartProvider } from "@/components/CartProvider";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import AppShell from "@/components/AppShell";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
@@ -25,11 +23,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <CartProvider>
-            <Navbar />
-            <div className="min-h-[calc(100dvh-4rem)]">{children}</div>
-            <Footer />
-          </CartProvider>
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>

@@ -6,11 +6,14 @@ from fastapi import HTTPException
 from sqlalchemy import func, select
 
 from app.models import BusinessSettings, Order, OrderItem, Product
+from app.routers.public import share_order
 from app.schemas.order import OrderCreate
+from app.schemas.settings import BusinessSettingsUpdate
 from app.services.orders import (
     checkout_links,
     create_order,
-    order_share_html,
+    get_business_settings,
+    order_response,
     update_order_status,
 )
 
@@ -62,6 +65,7 @@ def test_checkout_snapshots_totals_and_prefers_telegram(db):
     assert fallback_url == "https://m.me/test.seller"
     assert "Vitamin%20C" in preferred_url
     assert order.order_number in message
+    assert "Total: ៛102,500 ($25.00)" in message
 
 
 def test_multi_item_checkout_creates_one_order_and_complete_telegram_draft(db):
@@ -103,8 +107,18 @@ def test_multi_item_checkout_creates_one_order_and_complete_telegram_draft(db):
     assert parse_qs(parsed.query)["text"] == [message]
     assert "Vitamin C × 2 — $25.00" in message
     assert "Magnesium Gummies × 3 — $26.25" in message
-    assert "Total: $51.25" in message
-    assert order_url in message
+    assert "Total: $51.25 (៛210,125)" in message
+    assert message.endswith(f"Order details:\n{order_url}")
+    assert order_url == f"http://testserver/orders/{order.public_token}"
+
+
+def test_exchange_rate_defaults_to_4000_and_cannot_be_null(db):
+    settings = get_business_settings(db)
+    db.commit()
+
+    assert settings.usd_to_khr_rate == Decimal("4000")
+    with pytest.raises(ValueError):
+        BusinessSettingsUpdate.model_validate({"usd_to_khr_rate": None})
 
 
 def test_confirm_deducts_and_cancel_restores_stock(db):
@@ -124,30 +138,27 @@ def test_confirm_deducts_and_cancel_restores_stock(db):
     assert product.stock == 10
 
 
-def test_share_page_contains_open_graph_metadata(db):
+def test_legacy_share_redirects_to_frontend_order_page(db):
     product = configured_store(db)
-    product.name = '<script>alert("order")</script>'
-    product.sku = 'SKU<&"'
-    db.commit()
-    order, business = create_order(
+    order, _ = create_order(
         db, order_payload(product, quantity=1, currency="USD", channels=["telegram"])
     )
-    order_url = f"https://api.example.com/orders/{order.public_token}/share"
-    page = order_share_html(order, business, order_url)
+    response = share_order(order.public_token, db)
 
-    assert 'property="og:title"' in page
-    assert 'property="og:image"' in page
-    assert 'property="og:image:alt"' in page
-    assert 'name="robots" content="noindex, nofollow, noarchive"' in page
-    assert f'property="og:url" content="{order_url}"' in page
-    assert order.order_number in page
-    assert "Pending" in page
-    assert "Quantity: 1" in page
-    assert "$12.50" in page
-    assert "SKU&lt;&amp;&quot;" in page
-    assert "&lt;script&gt;alert(&quot;order&quot;)&lt;/script&gt;" in page
-    assert '<script>alert("order")</script>' not in page
-    assert page.count("<img ") == 1
+    assert response.status_code == 307
+    assert response.headers["location"] == f"http://testserver/orders/{order.public_token}"
+
+
+def test_order_response_includes_public_item_image_url(db):
+    product = configured_store(db)
+    order, _ = create_order(
+        db, order_payload(product, quantity=1, currency="USD", channels=["telegram"])
+    )
+
+    response = order_response(order)
+
+    assert response.items[0].image_url
+    assert response.items[0].image_url.endswith("/products/example.jpg")
 
 
 def test_checkout_rejects_insufficient_stock(db):

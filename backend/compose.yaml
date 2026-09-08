@@ -10,7 +10,7 @@ services:
     environment:
       DATABASE_BACKEND: sqlite
       SQLITE_PATH: /data/ecommerce.db
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8000}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
       RUN_MIGRATIONS: "true"
     ports:
       - "${API_PORT:-8000}:8000"

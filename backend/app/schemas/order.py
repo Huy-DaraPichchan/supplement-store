@@ -58,8 +58,8 @@ class OrderItemResponse(BaseModel):
     quantity: int
     unit_price_usd_cents: int
     line_total_usd_cents: int
-    unit_price_khr: int | None
-    line_total_khr: int | None
+    unit_price_khr: int
+    line_total_khr: int
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -71,9 +71,9 @@ class OrderResponse(BaseModel):
     status: OrderStatus
     selected_channels: str
     display_currency: Currency
-    exchange_rate: Decimal | None
+    exchange_rate: Decimal
     total_usd_cents: int
-    total_khr: int | None
+    total_khr: int
     created_at: datetime
     items: list[OrderItemResponse]
 
@@ -90,4 +90,3 @@ class CheckoutResponse(OrderResponse):
 
 class OrderStatusUpdate(BaseModel):
     status: OrderStatus
-

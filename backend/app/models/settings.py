@@ -20,5 +20,6 @@ class BusinessSettings(Base):
     messenger_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     telegram_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     messenger_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
-    usd_to_khr_rate: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
-
+    usd_to_khr_rate: Mapped[Decimal] = mapped_column(
+        Numeric(12, 4), default=Decimal("4000"), server_default="4000", nullable=False
+    )
