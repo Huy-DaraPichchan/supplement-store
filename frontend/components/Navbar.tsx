@@ -2,13 +2,17 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 import { getCategories, type Category } from "@/lib/api";
+<<<<<<< Updated upstream
 import { ChevronRight, Menu, X } from "lucide-react";
 import Image from "next/image";
+=======
+import { Menu, X } from "lucide-react";
+>>>>>>> Stashed changes
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import CartDrawer from "./CartDrawer";
-import SearchForm from "./SearchForm";
+// import SearchForm from "./SearchForm";
 import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
@@ -116,7 +120,7 @@ export default function Navbar() {
             className="h-10 w-auto"
           />
         </Link>
-        <SearchForm className="hidden min-w-0 flex-1 md:block md:max-w-xl" />
+        {/* <SearchForm className="hidden min-w-0 flex-1 md:block md:max-w-xl" /> */}
         <nav className="ml-auto hidden items-center gap-6 md:flex">
           <NavLinks />
         </nav>
@@ -125,9 +129,9 @@ export default function Navbar() {
           <CartDrawer />
         </div>
       </div>
-      <div className="px-3 pb-3 md:hidden">
+      {/* <div className="px-3 pb-3 md:hidden">
         <SearchForm />
-      </div>
+      </div> */}
     </header>
   );
 }

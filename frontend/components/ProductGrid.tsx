@@ -133,32 +133,27 @@ export default function ProductGrid() {
           </div>
         </aside>
 
-        <div className="min-w-0">
-          <div className="mb-5 flex flex-col gap-3 rounded-xl border border-border bg-card p-2.5 shadow-card sm:p-4 lg:flex-row lg:items-center">
-            <div className="flex-1">
-              <CatalogSearch query={query} />
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 lg:w-auto lg:shrink-0 lg:justify-end">
-              <MobileFilters
-                activeCount={activeFilterCount}
-                categories={categories}
-                category={category}
-                inStock={inStock}
-                onCategoryChange={(value) => setParam("category", value)}
-                onStockChange={(value) =>
-                  setParam("in_stock", value ? "true" : undefined)
-                }
-              />
-              <SortSelect
-                sort={sort}
-                onSortChange={(value) => setParam("sort", value)}
-              />
-            </div>
+        <div className="mb-5 flex flex-row flex-nowrap items-center gap-2 overflow-x-auto rounded-xl border border-border bg-card p-2.5 shadow-card sm:gap-3 sm:p-4">
+          <div className="min-w-[8rem] flex-1">
+            <CatalogSearch query={query} />
           </div>
-          <CatalogResults
-            query={productQuery}
-            onClear={() => window.history.pushState(null, "", "/products")}
-          />
+          <div className="flex shrink-0 flex-row items-center gap-2 sm:gap-3">
+            <MobileFilters
+              activeCount={activeFilterCount}
+              categories={categories}
+              category={category}
+              inStock={inStock}
+              onCategoryChange={(value) => setParam("category", value)}
+              onStockChange={(value) =>
+                setParam("in_stock", value ? "true" : undefined)
+              }
+            />
+
+            <SortSelect
+              sort={sort}
+              onSortChange={(value) => setParam("sort", value)}
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -430,13 +425,6 @@ function CatalogResults({
           <p className="mt-1 text-base text-muted-foreground">
             Try a different search or clear your filters.
           </p>
-          {/* <button
-            type="button"
-            onClick={onClear}
-            className="mt-4 min-h-11 rounded-md px-3 text-base font-semibold text-primary hover:bg-primary-soft hover:text-primary-hover"
-          >
-            Clear all filters
-          </button> */}
         </div>
       )}
       <div
@@ -524,18 +512,6 @@ function MobileFilters({
           />
 
           <div className="mt-6 flex gap-2">
-            {/* {activeCount > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  onCategoryChange("all");
-                  onStockChange(false);
-                }}
-                className="h-11 flex-1 rounded-md border border-input text-base font-semibold text-foreground transition-colors hover:bg-muted"
-              >
-                Clear all
-              </button>
-            )} */}
             <Dialog.Close
               className={`h-11 rounded-md bg-primary text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-hover ${
                 activeCount > 0 ? "flex-[2]" : "w-full"

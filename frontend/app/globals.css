@@ -200,6 +200,13 @@
   animation: page-in 220ms ease-out both;
 }
 
+@keyframes shine {
+  to { transform: translateX(100%); }
+}
+.animate-shine {
+  animation: shine 2.5s ease-in-out infinite;
+}
+
 @keyframes page-out {
   to {
     opacity: 0;

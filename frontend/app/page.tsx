@@ -1,7 +1,7 @@
 import HomeCategories from "@/components/HomeCategories";
 import ProductGridPreview from "@/components/ProductGridPreview";
-import SearchForm from "@/components/SearchForm";
 import { AnimatedHero } from "@/components/ui/AnimatedHero";
+import { ShinyBadge } from "@/components/ui/ShinyBadge";
 import { TextGenerateEffect } from "@/components/ui/TextGenerateEffect";
 import {
   ArrowRight,
@@ -41,14 +41,17 @@ export default function Home() {
             <div className="relative grid gap-7 px-4 py-7 sm:gap-8 sm:px-9 sm:py-12 lg:grid-cols-[1.35fr_0.65fr] lg:items-center lg:px-12 lg:py-14">
               <AnimatedHero
                 eyebrow={
-                  <p className="flex items-center gap-2 text-sm font-semibold text-primary">
-                    <Sparkles className="size-4" /> Everyday wellness,
-                    thoughtfully selected
-                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <ShinyBadge>30% off everyday essentials</ShinyBadge>
+                    <p className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      <Sparkles className="size-4" /> Everyday wellness,
+                      thoughtfully selected
+                    </p>
+                  </div>
                 }
                 heading={
                   <TextGenerateEffect
-                    words="Find supplements that fit your routine—not the noise."
+                    words="Find supplements that fit your routine not the noise."
                     className="font-heading mt-4 max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-[2.75rem]"
                   />
                 }
@@ -59,7 +62,6 @@ export default function Home() {
                   </p>
                 }
               >
-                <SearchForm variant="hero" className="mt-7 max-w-xl" />
                 <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-muted-foreground">
                   <span className="flex items-center gap-1.5">
                     <ShieldCheck className="size-4 text-primary" /> No account
