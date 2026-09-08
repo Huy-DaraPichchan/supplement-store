@@ -37,7 +37,7 @@ export default function BusinessPage() {
             }
             heading={
               <TextGenerateEffect
-                words="Start a practical conversation with PureVita."
+                words="Start a practical conversation with Vista Care."
                 className="font-heading mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl"
               />
             }

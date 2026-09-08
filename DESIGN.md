@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file defines the visual language and user-experience rules for the PureVita
+This file defines the visual language and user-experience rules for the Vista Care
 storefront. Read it before planning or implementing frontend changes.
 
 When implementation and this file disagree, treat this file as the intended design.
@@ -10,7 +10,7 @@ Update this file when an approved design decision changes.
 
 ## Product identity
 
-PureVita is a modern supplement marketplace.
+Vista Care is a modern supplement marketplace.
 
 The interface should feel:
 
@@ -20,6 +20,11 @@ The interface should feel:
 - Practical and easy to browse
 - Distinctive through its magenta identity
 - Dense enough for shopping without feeling crowded
+
+The official Vista Care wordmark is `frontend/public/vista-care-logo.svg`. Use it
+without recoloring, distortion, animation, or decorative effects. Its embedded
+magenta and purple colors are protected brand artwork; they do not replace the
+semantic interface palette or the primary UI color below.
 
 Use Facebook Marketplace as a UX reference for browsing, search, categories,
 filters, and product discovery. Do not copy Facebook's branding or visual design.
@@ -97,8 +102,8 @@ or green tones.
 
 - Use the native system sans-serif stack for functional interface text. This resolves to
   San Francisco on Apple devices and the familiar platform UI font elsewhere.
-- Use the native serif display stack only for the PureVita wordmark, page titles, and
-  major marketing or section headings.
+- Use the native serif display stack only for page titles and major marketing or
+  section headings. The official Vista Care wordmark uses its supplied artwork.
 - Keep navigation, forms, filters, product cards, prices, and transactional UI in sans-serif.
 - Do not add downloaded web fonts unless the native typography direction changes.
 - Favor readable, medium-weight headings over oversized display typography.

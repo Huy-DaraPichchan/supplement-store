@@ -7,8 +7,8 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: {
-    default: "PureVista",
-    template: "%s | PureVita",
+    default: "Vista Care",
+    template: "%s | Vista Care",
   },
   description: "A straightforward marketplace for everyday wellness products.",
   icons: {

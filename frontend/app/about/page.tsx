@@ -80,7 +80,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
           <AnimatedHero
             eyebrow={
-              <p className="text-sm font-medium text-primary">About PureVita</p>
+              <p className="text-sm font-medium text-primary">About Vista Care</p>
             }
             heading={
               <TextGenerateEffect
@@ -90,7 +90,7 @@ export default function AboutPage() {
             }
             description={
               <p className="mt-2 max-w-2xl text-base leading-7 text-muted-foreground">
-                PureVita is designed to make product discovery feel familiar,
+                Vista Care is designed to make product discovery feel familiar,
                 focused, and easy to continue from any device.
               </p>
             }
@@ -123,7 +123,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <h2 className="font-heading text-xl font-semibold">A closer look</h2>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-            A glimpse of the everyday essentials people come to PureVita for.
+            A glimpse of the everyday essentials people come to Vista Care for.
           </p>
         </div>
         <div className="mt-6 flex flex-col gap-4">

@@ -13,7 +13,7 @@ export default function ProductsPage() {
           <AnimatedHero
             eyebrow={
               <p className="text-sm font-semibold text-primary">
-                PureVita catalog
+                Vista Care catalog
               </p>
             }
             heading={

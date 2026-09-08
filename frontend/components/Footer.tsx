@@ -12,7 +12,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl gap-8 px-3 py-10 sm:px-6 sm:py-12 md:grid-cols-[1.4fr_0.6fr_0.7fr] lg:px-8">
         <div className="max-w-sm">
           <Link href="/" className="text-xl font-bold tracking-tight">
-            Pure<span className="text-primary">Vita</span>
+            Vista <span className="text-primary">Care</span>
           </Link>
           <p className="mt-3 text-base leading-7 text-muted-foreground">
             A cleaner, more straightforward way to browse wellness essentials and order directly with the store.
@@ -35,7 +35,7 @@ export default function Footer() {
       </div>
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-3 py-5 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>© {new Date().getFullYear()} PureVita</p>
+          <p>© {new Date().getFullYear()} Vista Care</p>
           <p>Wellness shopping made clear.</p>
         </div>
       </div>

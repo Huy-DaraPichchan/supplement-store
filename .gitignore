@@ -23,3 +23,8 @@ npm-debug.log*
 .DS_Store
 .vscode/
 .idea/
+
+
+# Temporary ignore
+requirements-changes.md
+.github
