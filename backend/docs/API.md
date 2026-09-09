@@ -365,7 +365,7 @@ Slugs contain lowercase letters, numbers, and single hyphens between segments.
 
 | Method | Path | Behavior |
 | --- | --- | --- |
-| `GET` | `/admin/products?search={text}&limit=100` | List all products; optionally search name/SKU |
+| `GET` | `/admin/products?search={text}&limit=100&offset=0` | List products; optionally search name/SKU and paginate |
 | `POST` | `/admin/products` | Create a product without an image |
 | `GET` | `/admin/products/{product_id}` | Read one product |
 | `PATCH` | `/admin/products/{product_id}` | Update supplied fields, including stock |

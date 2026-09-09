@@ -105,10 +105,16 @@ def delete_category(
 def admin_products(
     search: str | None = None,
     limit: int = Query(default=100, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
     _: Admin = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    statement = select(Product).order_by(Product.created_at.desc()).limit(limit)
+    statement = (
+        select(Product)
+        .order_by(Product.created_at.desc(), Product.id)
+        .offset(offset)
+        .limit(limit)
+    )
     if search:
         statement = statement.where(
             or_(Product.name.ilike(f"%{search}%"), Product.sku.ilike(f"%{search}%"))

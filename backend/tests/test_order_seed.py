@@ -31,12 +31,16 @@ def add_seed_prerequisites(db) -> dict[str, int]:
     return stocks
 
 
-def test_seed_orders_creates_varied_idempotent_orders_without_changing_stock(db):
+def test_seed_orders_creates_varied_idempotent_orders_without_changing_stock(db, capsys):
     stocks = add_seed_prerequisites(db)
 
     seed_orders()
     seed_orders()
+    output = capsys.readouterr().out
     db.expire_all()
+
+    assert "Orders: 250/250 (100%) | created: 250 | skipped: 0" in output
+    assert "Orders: 250/250 (100%) | created: 0 | skipped: 250" in output
 
     orders = list(
         db.scalars(

@@ -3,10 +3,12 @@ import getpass
 import json
 import mimetypes
 import random
+import sys
 import uuid
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
+from typing import TextIO
 
 from sqlalchemy import select
 
@@ -20,6 +22,54 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SEED_MANIFEST = PROJECT_ROOT / "seed_data" / "products.json"
 ORDER_SEED_NAMESPACE = uuid.UUID("c63d6981-5d4e-4b48-a551-84369de8cd64")
 ORDER_SEED_COUNT = 250
+NON_INTERACTIVE_PROGRESS_INTERVAL = 10
+
+
+class SeedProgress:
+    def __init__(self, label: str, total: int, stream: TextIO | None = None) -> None:
+        self.label = label
+        self.total = total
+        self.stream = stream or sys.stdout
+        self.current = 0
+        self.interactive = self.stream.isatty()
+        self.finished = False
+
+    def __enter__(self) -> "SeedProgress":
+        self._render(created=0, skipped=0)
+        return self
+
+    def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
+        if self.interactive and not self.finished:
+            self.stream.write("\n")
+            self.stream.flush()
+
+    def advance(self, *, created: int, skipped: int) -> None:
+        self.current += 1
+        self._render(created=created, skipped=skipped)
+
+    def _render(self, *, created: int, skipped: int) -> None:
+        percentage = 100 if self.total == 0 else min(100, self.current * 100 // self.total)
+        counts = (
+            f"{self.current}/{self.total} ({percentage:3d}%)"
+            f" | created: {created} | skipped: {skipped}"
+        )
+
+        if self.interactive:
+            bar_width = 30
+            filled = bar_width if self.total == 0 else self.current * bar_width // self.total
+            bar = f"[{'#' * filled}{'-' * (bar_width - filled)}]"
+            ending = "\n" if self.current >= self.total else ""
+            self.stream.write(f"\r{self.label}: {bar} {counts}{ending}")
+            self.stream.flush()
+        elif (
+            self.current == 0
+            or self.current >= self.total
+            or self.current % NON_INTERACTIVE_PROGRESS_INTERVAL == 0
+        ):
+            print(f"{self.label}: {counts}", file=self.stream, flush=True)
+
+        if self.current >= self.total:
+            self.finished = True
 
 
 def create_admin(email: str | None) -> None:
@@ -64,40 +114,47 @@ def seed_products() -> None:
             categories[category.slug] = category
         db.commit()
 
-        for data in manifest["products"]:
-            existing = db.scalar(select(Product).where(Product.sku == data["sku"]))
-            if existing:
-                skipped += 1
-                continue
+        with SeedProgress("Products", len(manifest["products"])) as progress:
+            for data in manifest["products"]:
+                existing = db.scalar(select(Product).where(Product.sku == data["sku"]))
+                if existing:
+                    skipped += 1
+                    progress.advance(created=created, skipped=skipped)
+                    continue
 
-            image_file = PROJECT_ROOT / "seed_data" / "product_images" / data["image"]
-            if not image_file.is_file():
-                raise SystemExit(f"Missing seed image: {image_file.relative_to(PROJECT_ROOT)}")
-            content_type = mimetypes.guess_type(image_file.name)[0] or "application/octet-stream"
-            image_path = None
-            try:
-                image_path, _ = upload_bytes(
-                    image_file.read_bytes(), content_type, image_file.suffix
-                )
-                product_data = {key: value for key, value in data.items() if key != "image"}
-                category_slug = product_data.pop("category_slug")
-                db.add(
-                    Product(
-                        **product_data,
-                        category_id=categories[category_slug].id,
-                        image_path=image_path,
+                image_file = PROJECT_ROOT / "seed_data" / "product_images" / data["image"]
+                if not image_file.is_file():
+                    raise SystemExit(
+                        f"Missing seed image: {image_file.relative_to(PROJECT_ROOT)}"
                     )
+                content_type = (
+                    mimetypes.guess_type(image_file.name)[0] or "application/octet-stream"
                 )
-                db.commit()
-                created += 1
-            except Exception:
-                db.rollback()
-                if image_path:
-                    try:
-                        remove_image(image_path)
-                    except Exception:
-                        pass
-                raise
+                image_path = None
+                try:
+                    image_path, _ = upload_bytes(
+                        image_file.read_bytes(), content_type, image_file.suffix
+                    )
+                    product_data = {key: value for key, value in data.items() if key != "image"}
+                    category_slug = product_data.pop("category_slug")
+                    db.add(
+                        Product(
+                            **product_data,
+                            category_id=categories[category_slug].id,
+                            image_path=image_path,
+                        )
+                    )
+                    db.commit()
+                    created += 1
+                    progress.advance(created=created, skipped=skipped)
+                except Exception:
+                    db.rollback()
+                    if image_path:
+                        try:
+                            remove_image(image_path)
+                        except Exception:
+                            pass
+                    raise
 
     print(f"Seed complete: {created} products created, {skipped} existing SKUs skipped")
 
@@ -128,60 +185,63 @@ def seed_orders() -> None:
             db.scalars(select(Order.order_number).where(Order.order_number.like("DEMO-ORD-%")))
         )
 
-        for index in range(ORDER_SEED_COUNT):
-            number = index + 1
-            order_number = f"DEMO-ORD-{number:04d}"
-            item_count = rng.randint(1, min(5, len(products)))
-            selected_products = rng.sample(products, item_count)
-            quantities = [rng.randint(1, 3) for _ in selected_products]
-            display_currency = rng.choice(["USD", "KHR"])
-            selected_channels = rng.choice(channels)
-            created_at = anchor - timedelta(
-                days=(index * 89 / max(ORDER_SEED_COUNT - 1, 1)),
-                minutes=rng.randint(0, 720),
-            )
-
-            if order_number in existing_numbers:
-                skipped += 1
-                continue
-
-            order = Order(
-                id=uuid.uuid5(ORDER_SEED_NAMESPACE, f"order-{number}"),
-                public_token=uuid.uuid5(ORDER_SEED_NAMESPACE, f"public-{number}"),
-                order_number=order_number,
-                status=statuses[index],
-                selected_channels=selected_channels,
-                display_currency=display_currency,
-                exchange_rate=rate,
-                total_usd_cents=0,
-                total_khr=0,
-                inventory_deducted=False,
-                created_at=created_at,
-                updated_at=created_at,
-            )
-
-            for product, quantity in zip(selected_products, quantities, strict=True):
-                line_usd = product.price_usd_cents * quantity
-                unit_khr = khr_amount(product.price_usd_cents, rate)
-                line_khr = khr_amount(line_usd, rate)
-                order.items.append(
-                    OrderItem(
-                        product_id=product.id,
-                        product_name=product.name,
-                        product_sku=product.sku,
-                        image_path=product.image_path,
-                        quantity=quantity,
-                        unit_price_usd_cents=product.price_usd_cents,
-                        line_total_usd_cents=line_usd,
-                        unit_price_khr=unit_khr,
-                        line_total_khr=line_khr,
-                    )
+        with SeedProgress("Orders", ORDER_SEED_COUNT) as progress:
+            for index in range(ORDER_SEED_COUNT):
+                number = index + 1
+                order_number = f"DEMO-ORD-{number:04d}"
+                item_count = rng.randint(1, min(5, len(products)))
+                selected_products = rng.sample(products, item_count)
+                quantities = [rng.randint(1, 3) for _ in selected_products]
+                display_currency = rng.choice(["USD", "KHR"])
+                selected_channels = rng.choice(channels)
+                created_at = anchor - timedelta(
+                    days=(index * 89 / max(ORDER_SEED_COUNT - 1, 1)),
+                    minutes=rng.randint(0, 720),
                 )
-                order.total_usd_cents += line_usd
-                order.total_khr += line_khr
 
-            db.add(order)
-            created += 1
+                if order_number in existing_numbers:
+                    skipped += 1
+                    progress.advance(created=created, skipped=skipped)
+                    continue
+
+                order = Order(
+                    id=uuid.uuid5(ORDER_SEED_NAMESPACE, f"order-{number}"),
+                    public_token=uuid.uuid5(ORDER_SEED_NAMESPACE, f"public-{number}"),
+                    order_number=order_number,
+                    status=statuses[index],
+                    selected_channels=selected_channels,
+                    display_currency=display_currency,
+                    exchange_rate=rate,
+                    total_usd_cents=0,
+                    total_khr=0,
+                    inventory_deducted=False,
+                    created_at=created_at,
+                    updated_at=created_at,
+                )
+
+                for product, quantity in zip(selected_products, quantities, strict=True):
+                    line_usd = product.price_usd_cents * quantity
+                    unit_khr = khr_amount(product.price_usd_cents, rate)
+                    line_khr = khr_amount(line_usd, rate)
+                    order.items.append(
+                        OrderItem(
+                            product_id=product.id,
+                            product_name=product.name,
+                            product_sku=product.sku,
+                            image_path=product.image_path,
+                            quantity=quantity,
+                            unit_price_usd_cents=product.price_usd_cents,
+                            line_total_usd_cents=line_usd,
+                            unit_price_khr=unit_khr,
+                            line_total_khr=line_khr,
+                        )
+                    )
+                    order.total_usd_cents += line_usd
+                    order.total_khr += line_khr
+
+                db.add(order)
+                created += 1
+                progress.advance(created=created, skipped=skipped)
 
         db.commit()
 

@@ -3,7 +3,7 @@ from fastapi import HTTPException
 
 from app.dependencies.auth import get_current_admin
 from app.models import Admin, Product
-from app.routers.admin import create_category, create_product, login
+from app.routers.admin import admin_products, create_category, create_product, login
 from app.routers.public import list_products
 from app.schemas.admin import AdminLogin
 from app.schemas.category import CategoryCreate
@@ -99,6 +99,32 @@ def test_catalog_search_availability_and_sorting(db):
     assert [product.id for product in first_page + second_page] == [
         product.id for product in ascending
     ]
+
+
+def test_admin_product_search_supports_offset_pagination(db, admin):
+    for number in range(6):
+        db.add(
+            Product(
+                name=f"Admin Product {number}",
+                slug=f"admin-product-{number}",
+                sku=f"ADMIN-{number}",
+                description="Admin pagination fixture",
+                price_usd_cents=1000 + number,
+                stock=number,
+                is_active=True,
+            )
+        )
+    db.commit()
+
+    first_page = admin_products(search="ADMIN", limit=2, offset=0, _=admin, db=db)
+    middle_page = admin_products(search="ADMIN", limit=2, offset=2, _=admin, db=db)
+    final_page = admin_products(search="ADMIN", limit=2, offset=4, _=admin, db=db)
+    empty_page = admin_products(search="ADMIN", limit=2, offset=6, _=admin, db=db)
+
+    page_ids = [product.id for product in first_page + middle_page + final_page]
+    assert len(page_ids) == 6
+    assert len(set(page_ids)) == 6
+    assert empty_page == []
 
 
 def test_login_returns_token(db):
