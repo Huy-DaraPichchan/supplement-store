@@ -3,6 +3,8 @@
 import {
   loginAction,
 } from "@/app/admin/actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { LogIn } from "lucide-react";
 import { useActionState } from "react";
 
@@ -15,13 +17,13 @@ export default function AdminLoginForm() {
         <label htmlFor="email" className="text-sm font-medium">
           Email
         </label>
-        <input
+        <Input
           id="email"
           name="email"
           type="email"
           autoComplete="username"
           required
-          className="h-11 rounded-md border border-input bg-background px-3 text-base"
+          className="h-11 text-base"
           placeholder="admin@example.com"
         />
       </div>
@@ -29,13 +31,13 @@ export default function AdminLoginForm() {
         <label htmlFor="password" className="text-sm font-medium">
           Password
         </label>
-        <input
+        <Input
           id="password"
           name="password"
           type="password"
           autoComplete="current-password"
           required
-          className="h-11 rounded-md border border-input bg-background px-3 text-base"
+          className="h-11 text-base"
         />
       </div>
       {state.status === "error" && (
@@ -43,14 +45,15 @@ export default function AdminLoginForm() {
           {state.message}
         </p>
       )}
-      <button
+      <Button
         type="submit"
         disabled={pending}
-        className="flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 font-semibold text-primary-foreground shadow-card transition-colors hover:bg-primary-hover disabled:opacity-50"
+        size="lg"
+        className="h-11 font-semibold shadow-card"
       >
         <LogIn className="size-4" />
         {pending ? "Signing in…" : "Sign in"}
-      </button>
+      </Button>
     </form>
   );
 }

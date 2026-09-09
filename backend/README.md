@@ -29,7 +29,8 @@ Add your Supabase project URL and server-side Storage key to `.env`, then run:
 ```bash
 docker compose up --build -d
 docker compose run --rm api python -m app.cli create-admin --email admin@example.com
-docker compose run --rm api python -m app.cli seed
+docker compose run --rm api python -m app.cli seed-products
+docker compose run --rm api python -m app.cli seed-orders
 ```
 
 Open:
@@ -70,9 +71,14 @@ See the [API guide](docs/API.md) for the complete customer and admin workflows.
 uv sync
 uv run alembic upgrade head
 uv run python -m app.cli create-admin --email admin@example.com
-uv run python -m app.cli seed
+uv run python -m app.cli seed-products
+uv run python -m app.cli seed-orders
 uv run uvicorn app.main:app --reload
 ```
+
+The first seed command ensures the 250-product demo catalog exists and uploads product images.
+Run `seed-orders` afterward to ensure 250 varied historical orders exist. Both are idempotent, and
+the order seed does not deduct or restore product stock.
 
 Run tests with:
 

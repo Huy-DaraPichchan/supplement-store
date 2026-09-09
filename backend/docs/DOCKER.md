@@ -99,11 +99,21 @@ The command prompts for the password twice. It applies migrations automatically 
 Seed the demo catalog and upload its images to Supabase Storage:
 
 ```bash
-docker compose run --rm api python -m app.cli seed
+docker compose run --rm api python -m app.cli seed-products
 ```
 
 The seed is idempotent by SKU. Reruns create missing products and skip existing products without
-overwriting dashboard changes. A new empty SQLite volume will upload new image objects when seeded.
+overwriting dashboard changes. It ensures 250 demo products exist and reuses the checked-in image
+assets. A new empty SQLite volume will upload new image objects when seeded.
+
+After the catalog exists, seed varied historical orders for admin-dashboard testing:
+
+```bash
+docker compose run --rm api python -m app.cli seed-orders
+```
+
+The order seed ensures 250 stable demo orders exist, skips existing demo order numbers on reruns,
+and never changes product stock. It must be run after the catalog seed.
 
 At this point the backend is ready for frontend development. Use the [API guide](API.md) for the
 customer and admin request flows.
@@ -171,7 +181,14 @@ Seed Supabase PostgreSQL and Storage:
 
 ```bash
 docker compose -f compose.yaml -f compose.supabase.yaml run --rm api \
-  python -m app.cli seed
+  python -m app.cli seed-products
+```
+
+Then seed the demo orders:
+
+```bash
+docker compose -f compose.yaml -f compose.supabase.yaml run --rm api \
+  python -m app.cli seed-orders
 ```
 
 The hosted and local databases are independent even though both use the same Storage bucket.

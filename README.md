@@ -26,15 +26,22 @@ cd backend
 # Docker (local SQLite)
 docker compose up --build -d
 docker compose run --rm api python -m app.cli create-admin --email admin@example.com
-docker compose run --rm api python -m app.cli seed
+docker compose run --rm api python -m app.cli seed-products
+docker compose run --rm api python -m app.cli seed-orders
 
 # or without Docker (uv)
 uv sync
 uv run alembic upgrade head
 uv run python -m app.cli create-admin --email admin@example.com
-uv run python -m app.cli seed
+uv run python -m app.cli seed-products
+uv run python -m app.cli seed-orders
 uv run uvicorn app.main:app --reload
 ```
+
+The catalog seed ensures 250 demo products exist and uploads their reused image assets. Run the
+order seed afterward to ensure 250 varied historical orders exist for admin-dashboard testing.
+Both commands are idempotent: they add missing demo records without replacing existing data, and
+the historical order seed does not change product stock.
 
 API: http://localhost:8000 · Swagger: http://localhost:8000/docs
 

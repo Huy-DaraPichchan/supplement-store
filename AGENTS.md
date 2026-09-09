@@ -107,6 +107,10 @@ Never skip the confirmation step before editing files.
 - Treat `DESIGN.md` as the source of truth for frontend design decisions. If an
   approved implementation changes the design system, update `DESIGN.md` in the
   same change.
+- For admin-dashboard work, also read the repository root `paceui-design.md` as a
+  component and layout reference. `DESIGN.md` governs all storefront changes;
+  `paceui-design.md` applies only to admin-dashboard work. For storefront changes,
+  ignore `paceui-design.md`; when both apply, `DESIGN.md` wins.
 - This is NOT the Next.js you know. APIs, conventions, and file structure may differ from older
   versions. Read the relevant guide in `frontend/node_modules/next/dist/docs/` before writing
   code, and heed deprecation notices.
