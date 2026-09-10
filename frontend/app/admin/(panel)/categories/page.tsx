@@ -1,6 +1,7 @@
-import PlaceholderSection from "@/components/PlaceholderSection";
-import { Boxes } from "lucide-react";
+import CategoryManagement from "@/components/CategoryManagement";
+import { getAdminCategories } from "@/lib/admin";
 
-export default function AdminCategoriesPage() {
-  return <PlaceholderSection title="Categories" description="Category management will be added in the next admin pass." icon={Boxes} />;
+export default async function AdminCategoriesPage() {
+  const categories = await getAdminCategories();
+  return <CategoryManagement categories={categories} />;
 }

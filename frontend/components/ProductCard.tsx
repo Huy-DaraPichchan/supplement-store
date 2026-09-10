@@ -6,7 +6,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "./CartProvider";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  eager = false,
+}: {
+  product: Product;
+  eager?: boolean;
+}) {
   const { addToCart } = useCart();
   const isAvailable = product.stock > 0;
 
@@ -14,7 +20,14 @@ export function ProductCard({ product }: { product: Product }) {
     <article className="group flex min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-card transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-raised">
       <Link href={`/products/${product.slug}`} className="relative block aspect-square overflow-hidden border-b border-border bg-muted">
         {product.imageUrl ? (
-          <Image src={product.imageUrl} alt={product.name} fill sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw" className="object-contain p-3 sm:p-5" />
+          <Image
+            src={product.imageUrl}
+            alt={product.name}
+            fill
+            loading={eager ? "eager" : "lazy"}
+            sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            className="object-contain p-3 sm:p-5"
+          />
         ) : (
           <span className="flex size-full items-center justify-center text-muted-foreground">
             <Package className="size-10" />

@@ -412,8 +412,8 @@ function CatalogResults({ query }: { query: ProductQuery }) {
         <ProductGridSkeleton />
       ) : products.length > 0 ? (
         <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {products.map((product, index) => (
+            <ProductCard key={product.id} product={product} eager={index < 4} />
           ))}
         </div>
       ) : (

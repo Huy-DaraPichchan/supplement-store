@@ -23,10 +23,23 @@ hosted. Supabase Storage for product images. JWT auth for admins only.
 ```bash
 cd backend
 
+# Remove all docker instances and built packages
+docker compose down -v
+
 # Docker (local SQLite)
+
+# Build backend project environment and dependencies
+
+# Build the project backend
 docker compose up --build -d
+
+# Create admin account
 docker compose run --rm api python -m app.cli create-admin --email admin@example.com
+
+# Seed 250 products
 docker compose run --rm api python -m app.cli seed-products
+
+# Seed 250 orders 
 docker compose run --rm api python -m app.cli seed-orders
 
 # or without Docker (uv)

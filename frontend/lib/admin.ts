@@ -9,7 +9,33 @@ export const ADMIN_SESSION_COOKIE = "vista-admin-session";
 export type AdminSettings = {
   telegram_username: string | null;
   telegram_enabled: boolean;
+  messenger_url: string | null;
+  messenger_enabled: boolean;
   usd_to_khr_rate: string | number;
+};
+
+export type AdminCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  is_active: boolean;
+};
+
+export type AdminProduct = {
+  id: string;
+  category_id: string | null;
+  name: string;
+  slug: string;
+  sku: string;
+  description: string;
+  price_usd_cents: number;
+  price_khr: number | null;
+  stock: number;
+  image_path: string | null;
+  image_url: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 };
 
 export class AdminApiError extends Error {
@@ -67,6 +93,8 @@ export async function adminRequest<T>(path: string, init?: RequestInit): Promise
     throw new AdminApiError(await errorMessage(response), response.status);
   }
 
+  if (response.status === 204) return undefined as T;
+
   return response.json() as Promise<T>;
 }
 
@@ -77,4 +105,25 @@ export async function getAdminSettings() {
 export async function getAdminOrders(status?: OrderStatus) {
   const query = status ? `?status=${status}&limit=100` : "?limit=100";
   return adminRequest<Order[]>(`/admin/orders${query}`);
+}
+
+export async function getAdminCategories() {
+  return adminRequest<AdminCategory[]>("/admin/categories");
+}
+
+export async function getAdminProducts({
+  search,
+  offset = 0,
+  limit = 51,
+}: {
+  search?: string;
+  offset?: number;
+  limit?: number;
+} = {}) {
+  const params = new URLSearchParams({
+    offset: String(offset),
+    limit: String(limit),
+  });
+  if (search?.trim()) params.set("search", search.trim());
+  return adminRequest<AdminProduct[]>(`/admin/products?${params.toString()}`);
 }

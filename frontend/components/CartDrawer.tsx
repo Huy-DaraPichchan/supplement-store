@@ -6,6 +6,7 @@ import {
   createOrder,
   getBusinessSettings,
   type BusinessSettings,
+  type CheckoutChannel,
   type Currency,
 } from "@/lib/api";
 import { MessageCircle, Minus, Plus, Send, ShoppingBag, Trash2, X } from "lucide-react";
@@ -21,7 +22,7 @@ export default function CartDrawer() {
   const [settings, setSettings] = useState<BusinessSettings | null>(null);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [currency, setCurrency] = useState<Currency>("USD");
-  const [submitting, setSubmitting] = useState(false);
+  const [submittingChannel, setSubmittingChannel] = useState<CheckoutChannel | null>(null);
   const [error, setError] = useState<string | null>(null);
   const checkoutStarted = useRef(false);
 
@@ -45,10 +46,11 @@ export default function CartDrawer() {
     };
   }, [open, settings]);
 
-  async function handleCheckout() {
-    if (!telegramAvailable || items.length === 0 || checkoutStarted.current) return;
+  async function handleCheckout(channel: CheckoutChannel) {
+    const channelAvailable = channel === "telegram" ? telegramAvailable : messengerAvailable;
+    if (!channelAvailable || items.length === 0 || checkoutStarted.current) return;
     checkoutStarted.current = true;
-    setSubmitting(true);
+    setSubmittingChannel(channel);
     setError(null);
     try {
       const order = await createOrder({
@@ -57,10 +59,10 @@ export default function CartDrawer() {
           quantity: item.quantity,
         })),
         display_currency: currency,
-        channels: ["telegram"],
+        channels: [channel],
       });
       clearCart();
-      window.location.assign(order.preferred_url);
+      window.location.assign(channel === "telegram" ? order.preferred_url : order.public_url);
     } catch (checkoutError) {
       checkoutStarted.current = false;
       setError(
@@ -69,12 +71,15 @@ export default function CartDrawer() {
           : "The order could not be created. Please try again.",
       );
     } finally {
-      setSubmitting(false);
+      setSubmittingChannel(null);
     }
   }
 
   const telegramAvailable = Boolean(
     settings?.telegram_enabled && settings.telegram_username?.trim(),
+  );
+  const messengerAvailable = Boolean(
+    settings?.messenger_enabled && settings.messenger_url?.trim(),
   );
 
   return (
@@ -190,22 +195,25 @@ export default function CartDrawer() {
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      disabled={!telegramAvailable || submitting}
-                      onClick={handleCheckout}
+                      disabled={!telegramAvailable || submittingChannel !== null}
+                      onClick={() => void handleCheckout("telegram")}
                       className="flex min-h-14 flex-col items-center justify-center rounded-md bg-primary px-2 text-sm font-semibold text-primary-foreground shadow-card transition-[background-color,box-shadow] hover:bg-primary-hover hover:shadow-raised disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
                     >
                       <span className="flex items-center gap-2"><Send className="size-4" /> Telegram</span>
                       <span className="mt-0.5 text-xs font-normal opacity-80">
-                        {submitting ? "Creating order…" : telegramAvailable ? "Create order & open" : settingsLoaded ? "Not configured" : "Checking…"}
+                        {submittingChannel === "telegram" ? "Creating order…" : telegramAvailable ? "Create order & open" : settingsLoaded ? "Not configured" : "Checking…"}
                       </span>
                     </button>
                     <button
                       type="button"
-                      disabled
-                      className="flex min-h-14 flex-col items-center justify-center rounded-md border border-border bg-muted px-2 text-sm font-semibold text-muted-foreground"
+                      disabled={!messengerAvailable || submittingChannel !== null}
+                      onClick={() => void handleCheckout("messenger")}
+                      className="flex min-h-14 flex-col items-center justify-center rounded-md border border-border bg-background px-2 text-sm font-semibold text-foreground shadow-card transition-[background-color,border-color,box-shadow] hover:border-primary/25 hover:bg-primary-soft hover:shadow-raised disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
                     >
                       <span className="flex items-center gap-2"><MessageCircle className="size-4" /> Messenger</span>
-                      <span className="mt-0.5 text-xs font-normal">Coming later</span>
+                      <span className="mt-0.5 text-xs font-normal opacity-80">
+                        {submittingChannel === "messenger" ? "Creating order…" : messengerAvailable ? "Create order & continue" : settingsLoaded ? "Not configured" : "Checking…"}
+                      </span>
                     </button>
                   </div>
                 </fieldset>

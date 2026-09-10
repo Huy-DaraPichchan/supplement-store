@@ -57,16 +57,16 @@ export default function OrdersTable({ orders, selectedStatus }: { orders: Order[
           <h2 id="orders-heading" className="mt-1 font-heading text-3xl font-semibold">Orders</h2>
           <p className="mt-2 text-sm text-muted-foreground">Latest {orders.length} matching orders, up to 100.</p>
         </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-          <div className="relative min-w-64 flex-1">
+        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto lg:min-w-[36rem]">
+          <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search orders, products, or SKU" className="h-10 pl-9" />
+            <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search orders, products, or SKU" className="h-11 pl-9" />
           </div>
           <Select
             value={selectedStatus}
             onValueChange={(value) => router.push(value === "all" ? "/admin/orders" : `/admin/orders?status=${value}`)}
           >
-            <SelectTrigger className="h-10 w-full capitalize sm:w-40" aria-label="Filter orders by status">
+            <SelectTrigger className="h-11 w-full capitalize sm:w-44" aria-label="Filter orders by status">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

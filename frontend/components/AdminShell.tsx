@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -41,7 +42,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 const navigation = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
@@ -65,18 +66,19 @@ export default function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <TooltipProvider>
-      <SidebarProvider>
+      <SidebarProvider style={{ "--sidebar-width-icon": "4rem" } as CSSProperties}>
         <Sidebar collapsible="icon">
-          <SidebarHeader className="border-b border-sidebar-border p-2">
-            <SidebarMenu>
+          <SidebarHeader className="border-b border-sidebar-border p-3">
+            <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   size="lg"
                   tooltip="Vista Care admin"
                   render={<Link href="/admin" aria-label="Vista Care admin overview" />}
+                  className="h-14 gap-3 px-2 group-data-[collapsible=icon]:size-10!"
                 >
-                  <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-card">
-                    <Image src="/vista-care-logo.svg" width={32} height={32} alt="" className="h-7 w-auto" />
+                  <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-card">
+                    <Image src="/vista-care-logo.svg" width={44} height={44} alt="" className="h-10 w-auto" />
                   </span>
                   <span className="grid min-w-0 flex-1 text-left leading-tight">
                     <span className="truncate font-semibold">Vista Care</span>
@@ -88,10 +90,10 @@ export default function AdminShell({ children }: { children: ReactNode }) {
           </SidebarHeader>
 
           <SidebarContent>
-            <SidebarGroup>
+            <SidebarGroup className="p-3">
               <SidebarGroupLabel>Workspace</SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="gap-1.5">
                   {navigation.map((item) => {
                     const active = item.href === "/admin" ? pathname === item.href : pathname.startsWith(item.href);
                     const Icon = item.icon;
@@ -101,6 +103,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
                           isActive={active}
                           tooltip={item.label}
                           render={<Link href={item.href} />}
+                          className="h-10 gap-3 px-3 group-data-[collapsible=icon]:size-10!"
                         >
                           <Icon />
                           <span>{item.label}</span>
@@ -113,11 +116,11 @@ export default function AdminShell({ children }: { children: ReactNode }) {
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-sidebar-border p-2">
-            <SidebarMenu>
+          <SidebarFooter className="border-t border-sidebar-border p-3">
+            <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
                 <form action={logoutAction}>
-                  <SidebarMenuButton type="submit" tooltip="Logout">
+                  <SidebarMenuButton type="submit" tooltip="Logout" className="h-10 gap-3 px-3 group-data-[collapsible=icon]:size-10!">
                     <LogOut />
                     <span>Logout</span>
                   </SidebarMenuButton>
@@ -150,11 +153,16 @@ export default function AdminShell({ children }: { children: ReactNode }) {
                   <ChevronDown className="size-4 text-muted-foreground" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-44">
-                  <DropdownMenuLabel>Administrator</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem render={<button type="submit" form="admin-profile-logout" />}>
-                    <LogOut /> Logout
-                  </DropdownMenuItem>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Administrator</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      nativeButton
+                      render={<button type="submit" form="admin-profile-logout" />}
+                    >
+                      <LogOut /> Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
               <form id="admin-profile-logout" action={logoutAction} />

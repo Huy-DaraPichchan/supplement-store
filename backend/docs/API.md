@@ -284,7 +284,10 @@ stock. Every order snapshots both USD and KHR totals using the current positive 
 A selected channel must also be enabled and have its seller address configured.
 
 When both channels are selected, Telegram is preferred and Messenger is returned as fallback.
-Both platforms require the customer to perform their final Send confirmation.
+Telegram carries `prepared_message` in its supported `text` query parameter. Messenger opens the
+configured Page conversation without prefilled text; clients should provide `prepared_message` or
+the public order page as a copy-and-paste handoff. Both platforms require the customer to perform
+their final Send confirmation.
 
 ### Public order JSON
 
