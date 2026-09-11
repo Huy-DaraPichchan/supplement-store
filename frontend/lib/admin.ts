@@ -78,14 +78,16 @@ export async function adminRequest<T>(path: string, init?: RequestInit): Promise
   const token = (await cookies()).get(ADMIN_SESSION_COOKIE)?.value;
   if (!token) redirect("/admin/login");
 
+  const headers = new Headers(init?.headers);
+  if (!(init?.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  headers.set("Authorization", `Bearer ${token}`);
+
   const response = await fetch(backendUrl(path), {
     cache: "no-store",
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...init?.headers,
-    },
+    headers,
   });
 
   if (response.status === 401) redirect("/admin/login?expired=1");

@@ -22,7 +22,7 @@ export default function AdminOverview({ orders }: { orders: Order[] }) {
   );
 
   return (
-    <section aria-labelledby="overview-heading" className="mx-auto max-w-7xl">
+    <section aria-labelledby="overview-heading" className="w-full">
       <div>
         <p className="text-sm font-medium text-primary">Latest activity</p>
         <h2 id="overview-heading" className="mt-1 font-heading text-3xl font-semibold">Order overview</h2>

@@ -157,7 +157,7 @@ function DeleteCategoryDialog({ category }: { category: AdminCategory }) {
 
 export default function CategoryManagement({ categories }: { categories: AdminCategory[] }) {
   return (
-    <section aria-labelledby="categories-heading" className="mx-auto max-w-5xl">
+    <section aria-labelledby="categories-heading" className="max-w-5xl">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-primary">Catalog organization</p>

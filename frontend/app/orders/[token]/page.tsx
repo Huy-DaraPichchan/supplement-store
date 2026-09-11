@@ -1,5 +1,4 @@
 import type { Order } from "@/lib/types/order";
-import OrderMessengerHandoff from "@/components/OrderMessengerHandoff";
 import { ArrowLeft, Package, Send } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -21,8 +20,6 @@ const getOrder = cache(async (token: string): Promise<Order | null> => {
 type ContactSettings = {
   telegram_username: string | null;
   telegram_enabled: boolean;
-  messenger_url: string | null;
-  messenger_enabled: boolean;
 };
 
 const getContactSettings = cache(async (): Promise<ContactSettings | null> => {
@@ -103,22 +100,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
   const telegramUrl = contactSettings?.telegram_enabled && telegramUsername
     ? `https://t.me/${encodeURIComponent(telegramUsername)}?text=${encodeURIComponent(`Hi, I have a question about order ${order.order_number}.`)}`
     : null;
-  const messengerUrl = contactSettings?.messenger_enabled
-    ? contactSettings.messenger_url?.trim() || null
-    : null;
-  const messengerSelected = order.selected_channels.split(",").includes("messenger");
   const total = formatOrderTotal(order);
-  const orderSummary = [
-    `New Order ${order.order_number}`,
-    `Created: ${formatDate(order.created_at)}`,
-    "",
-    ...order.items.map(
-      (item) =>
-        `${item.product_name} × ${item.quantity} — ${formatMoney(order, item.line_total_usd_cents, item.line_total_khr)}`,
-    ),
-    "",
-    `Total: ${formatOrderTotalText(order)}`,
-  ].join("\n");
 
   return (
     <main className="mx-auto min-h-[70dvh] max-w-6xl px-3 py-6 sm:px-6 sm:py-10 lg:px-8">
@@ -199,12 +181,6 @@ export default async function OrderPage({ params }: OrderPageProps) {
             >
               <Send className="size-4" /> Contact seller
             </a>
-          )}
-
-          {messengerSelected && messengerUrl && (
-            <div className={telegramUrl ? "mt-3" : undefined}>
-              <OrderMessengerHandoff messengerUrl={messengerUrl} summary={orderSummary} />
-            </div>
           )}
 
           <p className="mt-4 text-xs leading-5 text-muted-foreground">

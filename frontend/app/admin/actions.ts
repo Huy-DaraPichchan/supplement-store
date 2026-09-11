@@ -13,8 +13,9 @@ import { cookies } from "next/headers";
 import { redirect, unstable_rethrow } from "next/navigation";
 
 export type AdminActionState = {
-  status: "idle" | "success" | "error";
+  status: "idle" | "success" | "error" | "partial";
   message?: string;
+  productId?: string;
 };
 
 function actionError(error: unknown, fallback: string): AdminActionState {
@@ -25,6 +26,29 @@ function actionError(error: unknown, fallback: string): AdminActionState {
 }
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const maxImageBytes = 4 * 1024 * 1024;
+
+function productImage(formData: FormData) {
+  const value = formData.get("image");
+  if (!(value instanceof File) || value.size === 0) return { image: null };
+  if (!allowedImageTypes.has(value.type)) {
+    return { error: "Choose a JPEG, PNG, or WebP image." };
+  }
+  if (value.size > maxImageBytes) {
+    return { error: "Choose an image up to 4 MB." };
+  }
+  return { image: value };
+}
+
+async function uploadProductImage(productId: string, image: File) {
+  const upload = new FormData();
+  upload.set("file", image, image.name);
+  await adminRequest(`/admin/products/${encodeURIComponent(productId)}/image`, {
+    method: "POST",
+    body: upload,
+  });
+}
 
 function categoryPayload(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
@@ -111,8 +135,6 @@ export async function updateOrderingSettingsAction(
     .trim()
     .replace(/^@/, "");
   const telegramEnabled = formData.get("telegram_enabled") === "on";
-  const messengerUrl = String(formData.get("messenger_url") || "").trim();
-  const messengerEnabled = formData.get("messenger_enabled") === "on";
   const rateInput = String(formData.get("usd_to_khr_rate") || "").trim();
 
   if (telegramEnabled && !username) {
@@ -121,10 +143,6 @@ export async function updateOrderingSettingsAction(
   if (username && (username.includes("/") || /\s/.test(username))) {
     return { status: "error", message: "Enter only the Telegram username, without a link or spaces." };
   }
-  if (messengerEnabled && !messengerUrl) {
-    return { status: "error", message: "Enter a Messenger link before enabling it." };
-  }
-
   if (!rateInput) {
     return { status: "error", message: "Enter the USD to KHR exchange rate." };
   }
@@ -139,8 +157,6 @@ export async function updateOrderingSettingsAction(
       body: JSON.stringify({
         telegram_username: username || null,
         telegram_enabled: telegramEnabled,
-        messenger_url: messengerUrl || null,
-        messenger_enabled: messengerEnabled,
         usd_to_khr_rate: rate,
       }),
     });
@@ -228,17 +244,37 @@ export async function createProductAction(
 ): Promise<AdminActionState> {
   const result = productPayload(formData);
   if (result.error) return { status: "error", message: result.error };
+  const imageResult = productImage(formData);
+  if (imageResult.error) return { status: "error", message: imageResult.error };
+
+  let product: AdminProduct;
   try {
-    await adminRequest<AdminProduct>("/admin/products", {
+    product = await adminRequest<AdminProduct>("/admin/products", {
       method: "POST",
       body: JSON.stringify(result.payload),
     });
-    revalidatePath("/admin/products");
-    return { status: "success", message: "Product created." };
   } catch (error) {
     unstable_rethrow(error);
     return actionError(error, "Unable to create the product.");
   }
+
+  if (imageResult.image) {
+    try {
+      await uploadProductImage(product.id, imageResult.image);
+    } catch (error) {
+      unstable_rethrow(error);
+      revalidatePath("/admin/products");
+      const reason = error instanceof AdminApiError ? error.message : "Unable to upload the image.";
+      return {
+        status: "partial",
+        message: `Product created, but the image upload failed: ${reason}`,
+        productId: product.id,
+      };
+    }
+  }
+
+  revalidatePath("/admin/products");
+  return { status: "success", message: "Product created." };
 }
 
 export async function updateProductAction(
@@ -248,16 +284,53 @@ export async function updateProductAction(
 ): Promise<AdminActionState> {
   const result = productPayload(formData);
   if (result.error) return { status: "error", message: result.error };
+  const imageResult = productImage(formData);
+  if (imageResult.error) return { status: "error", message: imageResult.error };
+
   try {
     await adminRequest<AdminProduct>(`/admin/products/${encodeURIComponent(productId)}`, {
       method: "PATCH",
       body: JSON.stringify(result.payload),
     });
-    revalidatePath("/admin/products");
-    return { status: "success", message: "Product updated." };
   } catch (error) {
     unstable_rethrow(error);
     return actionError(error, "Unable to update the product.");
+  }
+
+  if (imageResult.image) {
+    try {
+      await uploadProductImage(productId, imageResult.image);
+    } catch (error) {
+      unstable_rethrow(error);
+      revalidatePath("/admin/products");
+      const reason = error instanceof AdminApiError ? error.message : "Unable to upload the image.";
+      return {
+        status: "error",
+        message: `Product details were saved, but the image upload failed: ${reason}`,
+      };
+    }
+  }
+
+  revalidatePath("/admin/products");
+  return { status: "success", message: "Product updated." };
+}
+
+export async function uploadProductImageAction(
+  productId: string,
+  _state: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const imageResult = productImage(formData);
+  if (imageResult.error) return { status: "error", message: imageResult.error };
+  if (!imageResult.image) return { status: "error", message: "Choose an image to upload." };
+
+  try {
+    await uploadProductImage(productId, imageResult.image);
+    revalidatePath("/admin/products");
+    return { status: "success", message: "Product image uploaded." };
+  } catch (error) {
+    unstable_rethrow(error);
+    return actionError(error, "Unable to upload the image.");
   }
 }
 

@@ -1,7 +1,7 @@
 import ProductManagement from "@/components/ProductManagement";
 import { getAdminCategories, getAdminProducts } from "@/lib/admin";
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 20;
 
 export default async function AdminProductsPage({
   searchParams,

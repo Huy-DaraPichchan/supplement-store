@@ -50,7 +50,7 @@ export default function OrdersTable({ orders, selectedStatus }: { orders: Order[
   }
 
   return (
-    <section aria-labelledby="orders-heading" className="mx-auto max-w-7xl">
+    <section aria-labelledby="orders-heading" className="w-full">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-primary">Order management</p>

@@ -5,15 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AdminSettings } from "@/lib/admin";
 import { ExternalLink, MessageCircle } from "lucide-react";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 export default function SettingsPanel({ settings }: { settings: AdminSettings }) {
   const [state, action, pending] = useActionState(updateOrderingSettingsAction, { status: "idle" as const });
-  const telegramUsername = settings.telegram_username?.replace(/^@/, "") || "";
-  const messengerUrl = settings.messenger_url?.trim() || "";
+  const [telegramUsername, setTelegramUsername] = useState(
+    settings.telegram_username?.replace(/^@/, "") || "",
+  );
+  const [telegramEnabled, setTelegramEnabled] = useState(settings.telegram_enabled);
+  const [exchangeRate, setExchangeRate] = useState(String(settings.usd_to_khr_rate));
 
   return (
-    <section aria-labelledby="ordering-settings" className="mx-auto max-w-3xl">
+    <section aria-labelledby="ordering-settings" className="max-w-3xl">
       <div className="flex items-center gap-3">
         <span className="flex size-10 items-center justify-center rounded-md bg-primary-soft text-primary"><MessageCircle className="size-5" /></span>
         <div>
@@ -27,38 +30,19 @@ export default function SettingsPanel({ settings }: { settings: AdminSettings })
           <label htmlFor="telegram_username" className="text-sm font-medium">Telegram username</label>
           <div className="flex h-11 overflow-hidden rounded-md border border-input bg-background">
             <span className="flex items-center border-r border-border px-3 text-muted-foreground">@</span>
-            <Input id="telegram_username" name="telegram_username" defaultValue={telegramUsername} placeholder="seller_username" autoComplete="off" className="h-full rounded-none border-0 shadow-none" />
+            <Input id="telegram_username" name="telegram_username" value={telegramUsername} onChange={(event) => setTelegramUsername(event.currentTarget.value.replace(/^@/, ""))} placeholder="seller_username" autoComplete="off" className="h-full rounded-none border-0 shadow-none" />
           </div>
           <p className="text-xs text-muted-foreground">Enter the username only, not a Telegram link.</p>
         </div>
 
         <label className="flex min-h-14 items-center justify-between gap-4 rounded-md border border-border px-4 py-2">
           <span><span className="block text-sm font-medium">Enable Telegram ordering</span><span className="block text-xs text-muted-foreground">Makes Telegram clickable in the cart.</span></span>
-          <input name="telegram_enabled" type="checkbox" defaultChecked={settings.telegram_enabled} className="size-5 accent-primary" />
-        </label>
-
-        <div className="grid gap-2">
-          <label htmlFor="messenger_url" className="text-sm font-medium">Messenger link</label>
-          <Input
-            id="messenger_url"
-            name="messenger_url"
-            type="url"
-            defaultValue={messengerUrl}
-            placeholder="https://m.me/your.page"
-            autoComplete="url"
-            className="h-11"
-          />
-          <p className="text-xs text-muted-foreground">Your Facebook Page chat link.</p>
-        </div>
-
-        <label className="flex min-h-14 items-center justify-between gap-4 rounded-md border border-border px-4 py-2">
-          <span><span className="block text-sm font-medium">Enable Messenger ordering</span><span className="block text-xs text-muted-foreground">Shows Messenger as a checkout channel in the cart.</span></span>
-          <input name="messenger_enabled" type="checkbox" defaultChecked={settings.messenger_enabled} className="size-5 accent-primary" />
+          <input name="telegram_enabled" type="checkbox" checked={telegramEnabled} onChange={(event) => setTelegramEnabled(event.currentTarget.checked)} className="size-5 accent-primary" />
         </label>
 
         <div className="grid gap-2">
           <label htmlFor="usd_to_khr_rate" className="text-sm font-medium">USD to KHR rate</label>
-          <Input id="usd_to_khr_rate" name="usd_to_khr_rate" type="number" inputMode="decimal" min="0.0001" step="0.0001" defaultValue={settings.usd_to_khr_rate} required className="h-11" />
+          <Input id="usd_to_khr_rate" name="usd_to_khr_rate" type="number" inputMode="decimal" min="0.0001" step="0.0001" value={exchangeRate} onChange={(event) => setExchangeRate(event.currentTarget.value)} required className="h-11" />
           <p className="text-xs text-muted-foreground">Defaults to 4000 KHR per USD and must remain positive.</p>
         </div>
 
@@ -70,14 +54,9 @@ export default function SettingsPanel({ settings }: { settings: AdminSettings })
 
         <div className="flex flex-wrap gap-2">
           <Button type="submit" size="lg" disabled={pending} className="min-w-36">{pending ? "Saving…" : "Save settings"}</Button>
-          {settings.telegram_enabled && telegramUsername && (
+          {telegramEnabled && telegramUsername && (
             <Button nativeButton={false} render={<a href={`https://t.me/${encodeURIComponent(telegramUsername)}`} target="_blank" rel="noreferrer" />} variant="outline" size="lg">
               Test Telegram <ExternalLink />
-            </Button>
-          )}
-          {settings.messenger_enabled && messengerUrl && (
-            <Button nativeButton={false} render={<a href={messengerUrl} target="_blank" rel="noreferrer" />} variant="outline" size="lg">
-              Test Messenger <ExternalLink />
             </Button>
           )}
         </div>
