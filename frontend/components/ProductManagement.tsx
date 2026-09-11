@@ -208,13 +208,16 @@ function ProductForm({
   const [name, setName] = useState(product?.name || "");
   const [slug, setSlug] = useState(product?.slug || "");
   const [slugEdited, setSlugEdited] = useState(Boolean(product));
+  const [categoryId, setCategoryId] = useState(product?.category_id || "uncategorized");
   const categoryItems = Object.fromEntries([
     ["uncategorized", "Uncategorized"],
     ...categories.map((category) => [
       category.id,
-      `${category.name}${category.is_active ? "" : " (inactive)"}`,
+      `${category.name}${category.sku_prefix ? "" : " (set SKU prefix first)"}${category.is_active ? "" : " (inactive)"}`,
     ]),
   ]);
+  const selectedCategory = categories.find((category) => category.id === categoryId);
+  const skuPreview = product?.sku || `${selectedCategory?.sku_prefix || "GEN"}-#####`;
 
   useEffect(() => {
     if (state.status === "success") close();
@@ -272,28 +275,33 @@ function ProductForm({
             <Label htmlFor={`${product?.id || "new"}-product-sku`}>SKU</Label>
             <Input
               id={`${product?.id || "new"}-product-sku`}
-              name="sku"
-              defaultValue={product?.sku}
-              required
-              maxLength={80}
-              className="h-11 uppercase"
+              value={skuPreview}
+              readOnly
+              className="h-11 font-mono uppercase read-only:bg-muted"
             />
           </div>
           <div className="grid gap-2">
             <Label htmlFor={`${product?.id || "new"}-product-category`}>Category</Label>
             <Select
               name="category_id"
-              defaultValue={product?.category_id || "uncategorized"}
+              value={categoryId}
+              onValueChange={(value) => setCategoryId(value ?? "uncategorized")}
               items={categoryItems}
             >
-              <SelectTrigger id={`${product?.id || "new"}-product-category`} className="h-11 min-w-0 w-full overflow-hidden">
+              <SelectTrigger id={`${product?.id || "new"}-product-category`} className="h-11! min-w-0 w-full overflow-hidden">
                 <SelectValue placeholder="Choose a category" className="min-w-0 truncate" />
               </SelectTrigger>
               <SelectContent align="start" alignItemWithTrigger={false}>
                 <SelectItem value="uncategorized">Uncategorized</SelectItem>
                 {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}{category.is_active ? "" : " (inactive)"}
+                  <SelectItem
+                    key={category.id}
+                    value={category.id}
+                    disabled={!product && !category.sku_prefix}
+                  >
+                    {category.name}
+                    {category.sku_prefix ? "" : " (set SKU prefix first)"}
+                    {category.is_active ? "" : " (inactive)"}
                   </SelectItem>
                 ))}
               </SelectContent>

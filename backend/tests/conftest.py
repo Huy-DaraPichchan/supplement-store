@@ -10,13 +10,16 @@ os.environ["PUBLIC_BASE_URL"] = "http://testserver"
 import pytest
 
 from app.database import Base, SessionLocal, engine
-from app.models import Admin
+from app.models import Admin, ProductSkuSequence
 from app.services.auth import hash_password
 
 
 @pytest.fixture(autouse=True)
 def clean_database():
     Base.metadata.create_all(engine)
+    with SessionLocal() as session:
+        session.add(ProductSkuSequence(id=1, next_value=1))
+        session.commit()
     yield
     Base.metadata.drop_all(engine)
 

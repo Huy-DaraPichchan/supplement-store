@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 
@@ -11,6 +12,7 @@ def test_seed_catalog_has_250_valid_unique_products():
     manifest = json.loads(SEED_MANIFEST.read_text(encoding="utf-8"))
     products = manifest["products"]
     category_slugs = {category["slug"] for category in manifest["categories"]}
+    category_prefixes = {category["sku_prefix"] for category in manifest["categories"]}
 
     assert len(products) == 250
     assert len({product["name"] for product in products}) == 250
@@ -21,3 +23,6 @@ def test_seed_catalog_has_250_valid_unique_products():
     }
     assert all(product["category_slug"] in category_slugs for product in products)
     assert all((PRODUCT_IMAGES / product["image"]).is_file() for product in products)
+    assert len(category_prefixes) == len(manifest["categories"])
+    assert "GEN" not in category_prefixes
+    assert all(re.fullmatch(r"[A-Z]{2,5}", prefix) for prefix in category_prefixes)

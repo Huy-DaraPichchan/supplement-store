@@ -49,6 +49,7 @@ function CategoryForm({ category, close }: { category?: AdminCategory; close: ()
   const [state, formAction, pending] = useActionState(action, initialState);
   const [name, setName] = useState(category?.name || "");
   const [slug, setSlug] = useState(category?.slug || "");
+  const [skuPrefix, setSkuPrefix] = useState(category?.sku_prefix || "");
   const [slugEdited, setSlugEdited] = useState(Boolean(category));
 
   useEffect(() => {
@@ -89,6 +90,30 @@ function CategoryForm({ category, close }: { category?: AdminCategory; close: ()
           className="h-11"
         />
       </div>
+      <div className="grid gap-2">
+        <Label htmlFor={`${category?.id || "new"}-category-sku-prefix`}>SKU prefix</Label>
+        <Input
+          id={`${category?.id || "new"}-category-sku-prefix`}
+          name="sku_prefix"
+          value={skuPrefix}
+          onChange={(event) => setSkuPrefix(event.target.value.toUpperCase())}
+          required
+          minLength={2}
+          maxLength={5}
+          pattern="[A-Z]{2,5}"
+          readOnly={Boolean(category?.sku_prefix)}
+          className="h-11 uppercase read-only:bg-muted"
+          aria-describedby={`${category?.id || "new"}-category-sku-prefix-help`}
+        />
+        <p
+          id={`${category?.id || "new"}-category-sku-prefix-help`}
+          className="text-xs text-muted-foreground"
+        >
+          {category?.sku_prefix
+            ? "Locked after assignment. Product SKUs keep this prefix permanently."
+            : "Use 2–5 letters, such as VIT or NUT. This cannot be changed later."}
+        </p>
+      </div>
       <Label className="flex min-h-14 justify-between rounded-lg border border-border px-4 py-3">
         <span><span className="block">Active category</span><span className="mt-1 block text-xs font-normal text-muted-foreground">Available to the storefront and product filters.</span></span>
         <Switch name="is_active" defaultChecked={category?.is_active ?? true} />
@@ -112,7 +137,7 @@ function CategoryDialog({ category }: { category?: AdminCategory }) {
       <DialogContent className="sm:max-w-lg!">
         <DialogHeader>
           <DialogTitle className="text-xl">{category ? "Edit category" : "Add category"}</DialogTitle>
-          <DialogDescription>Use a clear customer-facing name and URL-friendly slug.</DialogDescription>
+          <DialogDescription>Add a customer-facing name, URL slug, and permanent SKU prefix.</DialogDescription>
         </DialogHeader>
         <CategoryForm category={category} close={() => setOpen(false)} />
       </DialogContent>
@@ -169,12 +194,19 @@ export default function CategoryManagement({ categories }: { categories: AdminCa
       {categories.length > 0 ? (
         <div className="mt-6 overflow-hidden rounded-lg border border-border bg-card shadow-card">
           <Table>
-            <TableHeader><TableRow className="bg-muted/50"><TableHead>Name</TableHead><TableHead>Slug</TableHead><TableHead>Status</TableHead><TableHead className="w-24"><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow className="bg-muted/50"><TableHead>Name</TableHead><TableHead>Slug</TableHead><TableHead>SKU prefix</TableHead><TableHead>Status</TableHead><TableHead className="w-24"><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
             <TableBody>
               {categories.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell className="font-mono text-xs text-muted-foreground">{category.slug}</TableCell>
+                  <TableCell>
+                    {category.sku_prefix ? (
+                      <span className="font-mono text-xs font-semibold">{category.sku_prefix}</span>
+                    ) : (
+                      <Badge variant="outline" className="bg-warning/10 text-warning">Needs prefix</Badge>
+                    )}
+                  </TableCell>
                   <TableCell><Badge variant="outline" className={category.is_active ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}>{category.is_active ? "Active" : "Inactive"}</Badge></TableCell>
                   <TableCell><div className="flex justify-end gap-1"><CategoryDialog category={category} /><DeleteCategoryDialog category={category} /></div></TableCell>
                 </TableRow>

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -33,3 +33,12 @@ class Product(Base):
 
     category = relationship("Category", back_populates="products")
 
+
+class ProductSkuSequence(Base):
+    __tablename__ = "product_sku_sequences"
+    __table_args__ = (
+        CheckConstraint("next_value >= 1", name="ck_product_sku_sequence_positive"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    next_value: Mapped[int] = mapped_column(Integer, nullable=False, default=1)

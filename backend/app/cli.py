@@ -111,6 +111,13 @@ def seed_products() -> None:
                 category = Category(**data)
                 db.add(category)
                 db.flush()
+            elif category.sku_prefix is None:
+                category.sku_prefix = data["sku_prefix"]
+            elif category.sku_prefix != data["sku_prefix"]:
+                raise SystemExit(
+                    f"Category {category.slug} already uses SKU prefix "
+                    f"{category.sku_prefix}, not {data['sku_prefix']}"
+                )
             categories[category.slug] = category
         db.commit()
 

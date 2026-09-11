@@ -10,7 +10,14 @@ import {
   type ProductSort,
 } from "@/lib/api";
 import type { Product } from "@/lib/types/product";
-import { Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ProductCard } from "./ProductCard";
@@ -170,82 +177,41 @@ function SortSelect({
   sort: ProductSort;
   onSortChange: (value: ProductSort) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const activeLabel = sortOptions.find(
-    (option) => option.value === sort,
-  )?.label;
-
-  useEffect(() => {
-    if (!open) return;
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [open]);
+  const items = Object.fromEntries(
+    sortOptions.map((option) => [option.value, option.label]),
+  );
 
   return (
-    <div ref={containerRef} className="relative w-full sm:w-auto">
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        className="flex h-11 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-base text-foreground outline-none transition-[border-color,box-shadow] hover:bg-muted focus:border-primary focus:ring-2 focus:ring-primary/15 sm:w-auto"
+    <Select
+      value={sort}
+      onValueChange={(value) => {
+        if (value) onSortChange(value as ProductSort);
+      }}
+      items={items}
+    >
+      <SelectTrigger
+        aria-label="Sort products"
+        className="h-11! min-w-28 max-w-44 bg-background px-3 text-base"
       >
-        <span className="flex min-w-0 items-center gap-1.5 truncate">
-          <span className="hidden text-muted-foreground sm:inline">Sort</span>
-          {activeLabel}
-        </span>
-        <ChevronDown
-          className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      {open && (
-        <div
-          role="listbox"
-          className="absolute right-0 top-full z-10 mt-2 w-full min-w-[11rem] overflow-hidden rounded-lg border border-border bg-card p-1 shadow-panel sm:w-auto"
-        >
-          {sortOptions.map((option) => {
-            const active = option.value === sort;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={active}
-                onClick={() => {
-                  onSortChange(option.value);
-                  setOpen(false);
-                }}
-                className={`flex min-h-10 w-full cursor-pointer items-center justify-between gap-2 rounded-md px-3 text-left text-base transition-colors ${
-                  active
-                    ? "bg-primary-soft font-medium text-primary"
-                    : "text-foreground hover:bg-muted"
-                }`}
-              >
-                {option.label}
-                {active && <Check className="size-4 shrink-0 text-primary" />}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent
+        align="end"
+        alignItemWithTrigger={false}
+        collisionAvoidance={{
+          side: "none",
+          align: "shift",
+          fallbackAxisSide: "none",
+        }}
+        className="min-w-44"
+      >
+        {sortOptions.map((option) => (
+          <SelectItem key={option.value} value={option.value} className="min-h-10 text-base">
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 

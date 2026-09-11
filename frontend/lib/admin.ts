@@ -18,6 +18,7 @@ export type AdminCategory = {
   id: string;
   name: string;
   slug: string;
+  sku_prefix: string | null;
   is_active: boolean;
 };
 

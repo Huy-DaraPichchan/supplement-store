@@ -68,7 +68,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     <TooltipProvider>
       <SidebarProvider style={{ "--sidebar-width-icon": "4rem" } as CSSProperties}>
         <Sidebar collapsible="icon">
-          <SidebarHeader className="border-b border-sidebar-border p-3">
+          <SidebarHeader className="h-20 shrink-0 justify-center border-b border-sidebar-border p-3">
             <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -132,7 +132,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
         </Sidebar>
 
         <SidebarInset>
-          <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6">
+          <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6 lg:h-20">
             <div className="flex min-w-0 items-center gap-2">
               <SidebarTrigger className="size-10" />
               <div className="h-5 w-px bg-border" aria-hidden="true" />

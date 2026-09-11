@@ -10,9 +10,9 @@
     "usd_to_khr_rate": 4100
   },
   "categories": [
-    {"name": "Vitamins & Supplements", "slug": "vitamins-supplements", "is_active": true},
-    {"name": "Food & Nutrition", "slug": "food-nutrition", "is_active": true},
-    {"name": "Personal Care", "slug": "personal-care", "is_active": true}
+    {"name": "Vitamins & Supplements", "slug": "vitamins-supplements", "sku_prefix": "VIT", "is_active": true},
+    {"name": "Food & Nutrition", "slug": "food-nutrition", "sku_prefix": "NUT", "is_active": true},
+    {"name": "Personal Care", "slug": "personal-care", "sku_prefix": "PER", "is_active": true}
   ],
   "products": [
     {"name":"Aloe Vera Supplement","slug":"aloe-vera-supplement","sku":"DEMO-001","description":"Demo aloe vera product.","price_usd_cents":1299,"stock":30,"is_active":true,"category_slug":"vitamins-supplements","image":"aloe vera.jpg"},

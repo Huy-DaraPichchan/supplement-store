@@ -1,13 +1,13 @@
 import uuid
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
 from app.database import get_db
 from app.dependencies.auth import get_current_admin
-from app.models import Admin, BusinessSettings, Category, Order, Product
+from app.models import Admin, BusinessSettings, Category, Order, Product, ProductSkuSequence
 from app.schemas.admin import AdminLogin, TokenResponse
 from app.schemas.category import CategoryCreate, CategoryResponse, CategoryUpdate
 from app.schemas.order import OrderResponse, OrderStatusUpdate
@@ -27,13 +27,28 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 def integrity_conflict(db: Session, exc: IntegrityError) -> None:
     db.rollback()
-    raise HTTPException(status_code=409, detail="a record with that slug, SKU, or email exists") from exc
+    raise HTTPException(
+        status_code=409,
+        detail="a record with that name, slug, SKU prefix, SKU, or email already exists",
+    ) from exc
 
 
 def product_response(product: Product) -> ProductResponse:
     return ProductResponse.model_validate(product).model_copy(
         update={"image_url": public_url(product.image_path)}
     )
+
+
+def allocate_product_sku(db: Session, prefix: str) -> str:
+    next_value = db.scalar(
+        update(ProductSkuSequence)
+        .where(ProductSkuSequence.id == 1)
+        .values(next_value=ProductSkuSequence.next_value + 1)
+        .returning(ProductSkuSequence.next_value)
+    )
+    if next_value is None:
+        raise HTTPException(status_code=500, detail="product SKU sequence is not initialized")
+    return f"{prefix}-{next_value - 1:05d}"
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -58,6 +73,8 @@ def create_category(
     _: Admin = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
+    if payload.sku_prefix == "GEN":
+        raise HTTPException(status_code=422, detail="GEN is reserved for uncategorized products")
     category = Category(**payload.model_dump())
     db.add(category)
     try:
@@ -78,7 +95,16 @@ def update_category(
     category = db.get(Category, category_id)
     if category is None:
         raise HTTPException(status_code=404, detail="category not found")
-    for key, value in payload.model_dump(exclude_unset=True).items():
+    values = payload.model_dump(exclude_unset=True)
+    if "sku_prefix" in values:
+        prefix = values["sku_prefix"]
+        if prefix is None:
+            raise HTTPException(status_code=422, detail="a category SKU prefix cannot be cleared")
+        if prefix == "GEN":
+            raise HTTPException(status_code=422, detail="GEN is reserved for uncategorized products")
+        if category.sku_prefix is not None and prefix != category.sku_prefix:
+            raise HTTPException(status_code=409, detail="a category SKU prefix cannot be changed")
+    for key, value in values.items():
         setattr(category, key, value)
     try:
         db.commit()
@@ -128,9 +154,13 @@ def create_product(
     _: Admin = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    if payload.category_id and db.get(Category, payload.category_id) is None:
+    category = db.get(Category, payload.category_id) if payload.category_id else None
+    if payload.category_id and category is None:
         raise HTTPException(status_code=422, detail="category not found")
-    product = Product(**payload.model_dump())
+    if category is not None and category.sku_prefix is None:
+        raise HTTPException(status_code=422, detail="category needs an SKU prefix")
+    sku = allocate_product_sku(db, category.sku_prefix if category else "GEN")
+    product = Product(**payload.model_dump(), sku=sku)
     db.add(product)
     try:
         db.commit()

@@ -53,14 +53,22 @@ async function uploadProductImage(productId: string, image: File) {
 function categoryPayload(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const slug = String(formData.get("slug") || "").trim().toLowerCase();
+  const skuPrefix = String(formData.get("sku_prefix") || "").trim().toUpperCase();
   if (!name) return { error: "Enter a category name." };
   if (!slugPattern.test(slug)) {
     return { error: "Use lowercase letters, numbers, and single hyphens for the slug." };
+  }
+  if (!/^[A-Z]{2,5}$/.test(skuPrefix)) {
+    return { error: "Use 2 to 5 letters for the SKU prefix." };
+  }
+  if (skuPrefix === "GEN") {
+    return { error: "GEN is reserved for uncategorized products." };
   }
   return {
     payload: {
       name,
       slug,
+      sku_prefix: skuPrefix,
       is_active: formData.get("is_active") === "on",
     },
   };
@@ -69,11 +77,10 @@ function categoryPayload(formData: FormData) {
 function productPayload(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const slug = String(formData.get("slug") || "").trim().toLowerCase();
-  const sku = String(formData.get("sku") || "").trim().toUpperCase();
   const price = String(formData.get("price_usd") || "").trim();
   const stock = String(formData.get("stock") || "").trim();
   const categoryId = String(formData.get("category_id") || "");
-  if (!name || !sku) return { error: "Enter a product name and SKU." };
+  if (!name) return { error: "Enter a product name." };
   if (!slugPattern.test(slug)) {
     return { error: "Use lowercase letters, numbers, and single hyphens for the slug." };
   }
@@ -87,7 +94,6 @@ function productPayload(formData: FormData) {
       category_id: categoryId && categoryId !== "uncategorized" ? categoryId : null,
       name,
       slug,
-      sku,
       description: String(formData.get("description") || "").trim(),
       price_usd_cents: Math.round(Number(price) * 100),
       stock: Number(stock),

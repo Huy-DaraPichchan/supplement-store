@@ -359,10 +359,12 @@ Create example:
 curl -X POST "$BASE_URL/admin/categories" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Vitamins","slug":"vitamins","is_active":true}'
+  -d '{"name":"Vitamins","slug":"vitamins","sku_prefix":"VIT","is_active":true}'
 ```
 
-Slugs contain lowercase letters, numbers, and single hyphens between segments.
+Slugs contain lowercase letters, numbers, and single hyphens between segments. `sku_prefix` is a
+unique 2–5 letter code. It is normalized to uppercase and cannot be changed after assignment.
+`GEN` is reserved for uncategorized products.
 
 ## Admin products
 
@@ -385,13 +387,18 @@ curl -X POST "$BASE_URL/admin/products" \
     "category_id": "6373fb03-2114-4aa2-b67f-0bda1394595a",
     "name": "Vitamin C",
     "slug": "vitamin-c",
-    "sku": "VIT-C",
     "description": "Daily vitamin C",
     "price_usd_cents": 1250,
     "stock": 10,
     "is_active": true
   }'
 ```
+
+The API assigns the SKU when the product is created. It combines the category prefix (or `GEN`
+for an uncategorized product) with one global sequence, such as `VIT-00001`, `NUT-00002`, and
+`GEN-00003`. Five digits is the minimum width, so the sequence continues as `VIT-100000` instead
+of resetting when it exceeds 99999. Existing SKUs are retained, and a product's SKU does not
+change if its category changes.
 
 Update only the supplied fields:
 
