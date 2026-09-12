@@ -27,4 +27,7 @@ npm-debug.log*
 
 # Temporary ignore
 requirements-changes.md
-.github
+.github/*
+!.github/workflows/
+.github/workflows/*
+!.github/workflows/deploy-backend-prod.yml

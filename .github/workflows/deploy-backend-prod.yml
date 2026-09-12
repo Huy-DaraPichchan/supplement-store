@@ -1,0 +1,57 @@
+name: Deploy backend production
+
+on:
+  push:
+    branches:
+      - prod
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend-prod.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fastapi-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Test, migrate, and deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install dependencies
+        run: uv sync --locked --dev
+
+      - name: Run backend tests
+        run: uv run pytest
+
+      - name: Apply production database migrations
+        run: uv run alembic upgrade head
+        env:
+          DATABASE_BACKEND: postgresql
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          SECRET_KEY: migration-only
+          SUPABASE_URL: https://example.invalid
+          SUPABASE_SECRET_KEY: migration-only
+
+      - name: Deploy to FastAPI Cloud
+        run: uv run fastapi deploy --app-id "$FASTAPI_CLOUD_APP_ID"
+        env:
+          FASTAPI_CLOUD_TOKEN: ${{ secrets.FASTAPI_CLOUD_TOKEN }}
+          FASTAPI_CLOUD_APP_ID: ${{ secrets.FASTAPI_CLOUD_APP_ID }}

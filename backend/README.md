@@ -12,6 +12,7 @@ Choose the guide that matches what you are doing:
 | --- | --- |
 | Run the backend locally | [Local Docker setup](docs/DOCKER.md#local-sqlite-quick-start) |
 | Deploy with Supabase PostgreSQL | [Hosted Docker setup](docs/DOCKER.md#supabase-postgresql-hosting) |
+| Deploy the production branch | [FastAPI Cloud production](#fastapi-cloud-production) |
 | Connect a frontend to the API | [API guide](docs/API.md) |
 | Look up a specific endpoint | [Endpoint summary](docs/API.md#endpoint-summary) |
 | Fix a setup problem | [Docker troubleshooting](docs/DOCKER.md#troubleshooting) |
@@ -85,6 +86,37 @@ Run tests with:
 ```bash
 uv run pytest
 ```
+
+## FastAPI Cloud production
+
+Production backend deployments run from `.github/workflows/deploy-backend-prod.yml` when backend
+changes are pushed to `prod`. The workflow installs locked dependencies, runs the backend tests,
+applies all Alembic migrations, and deploys the existing FastAPI Cloud app. A failed test or
+migration stops the deployment.
+
+Configure these GitHub Actions repository secrets before the first run:
+
+| Secret | Value |
+| --- | --- |
+| `FASTAPI_CLOUD_TOKEN` | FastAPI Cloud deploy token |
+| `FASTAPI_CLOUD_APP_ID` | ID of the existing FastAPI Cloud app |
+| `PROD_DATABASE_URL` | Production Supabase session-pooler URL on port `5432` |
+
+From the backend directory, create the FastAPI Cloud secrets after authenticating the CLI:
+
+```bash
+uv run fastapi login
+uv run fastapi cloud setup-ci --secrets-only .
+```
+
+If GitHub CLI authentication is unavailable, the command prints the values so they can be added
+under **GitHub repository → Settings → Secrets and variables → Actions**. Add
+`PROD_DATABASE_URL` there separately. Deploy tokens expire after 365 days; rerun the setup command
+to replace an expiring token.
+
+The FastAPI Cloud app keeps its existing environment variables and custom domain. Disconnect its
+native Source Repository integration only after the GitHub secrets and workflow are ready; this
+prevents the repository default branch from continuing to deploy the app.
 
 ## Technology
 
